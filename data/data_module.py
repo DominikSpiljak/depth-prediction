@@ -17,7 +17,7 @@ class DepthEstimationDataset(Dataset):
 
     def __getitem__(self, idx):
         rgb_image, depth_map = self.loader[self.indices[idx]]
-        return transformations(rgb_image), transformations(depth_map)
+        return transformations(rgb_image), transformations(depth_map.copy())
 
 
 def collate_fn(self, batch):

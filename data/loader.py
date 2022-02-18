@@ -11,7 +11,7 @@ class DataMatLoader:
             np.moveaxis(np.array(self.file_handle.get("images")[key]), 0, -1), k=3
         )
         depth_map = np.rot90(np.array(self.file_handle.get("depths")[key]), k=3)
-        return rgb_image, depth_map
+        return rgb_image, depth_map[..., np.newaxis]
 
     def __len__(self):
         return len(self.file_handle.get("images"))

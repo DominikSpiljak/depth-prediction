@@ -1,0 +1,6 @@
+torch
+opencv-python
+numpy
+pytorch-lightning
+h5py
+torchvision

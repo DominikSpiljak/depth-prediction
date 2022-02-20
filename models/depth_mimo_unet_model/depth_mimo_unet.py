@@ -40,6 +40,9 @@ class ResidualBlocks(nn.Module):
         return self.res_blocks(x)
 
 
+# TODO: Write a pl module
+
+
 class EncoderBlock(nn.Module):
     def __init__(self, in_channels, out_channels, num_res_blocks):
         super().__init__()
@@ -311,7 +314,7 @@ class MIMOUnet(nn.Module):
         out_scale2 = self.out_conv_scale2(db2_res_out)
         out_scale1 = self.out_conv_scale1(db1_out)
 
-        return out_scale1, out_scale2, out_scale3
+        return torch.tanh(out_scale1), torch.tanh(out_scale2), torch.tanh(out_scale3)
 
 
 if __name__ == "__main__":

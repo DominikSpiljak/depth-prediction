@@ -2,8 +2,16 @@ import cv2 as cv
 import numpy as np
 
 
-def visualise_depth(*, depth_map, rgb_im=None):
-    depth_map = (depth_map + 1) / 2
+def visualise_depth(*, depth_map, rgb_im=None, prediction=None, normalized=True):
+    if normalized:
+        depth_map = (depth_map + 1) / 2
+
+    if prediction is not None:
+        if normalized:
+            prediction = (depth_map + 1) / 2
+
+        depth_map = np.hstack((prediction, depth_map))
+
     min_val = depth_map.min()
     max_val = depth_map.max()
     if min_val == max_val:
@@ -16,21 +24,8 @@ def visualise_depth(*, depth_map, rgb_im=None):
     if rgb_im is None:
         return depth_color_map
 
-    rgb_im = (rgb_im + 1) / 2
+    if normalized:
+        rgb_im = (rgb_im + 1) / 2
     rgb_im = (rgb_im * 255).astype(np.uint8)
-
-    print(
-        depth_color_map.shape,
-        depth_color_map.min(),
-        depth_color_map.max(),
-        depth_color_map.dtype,
-    )
-
-    print(
-        rgb_im.shape,
-        rgb_im.min(),
-        rgb_im.max(),
-        rgb_im.dtype,
-    )
 
     return np.hstack((rgb_im, depth_color_map))

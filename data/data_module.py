@@ -33,20 +33,14 @@ def collate_fn(batch):
 
 
 class DepthEstimationDataModule(pl.LightningDataModule):
-    def __init__(
-        self,
-        *,
-        data_path: str,
-        batch_size: int = 2,
-        test_ratio: float = 0.2,
-        val_ratio=0.1,
-        num_workers=4,
-        image_size=[240, 320],
-    ):
-        self.data_path = data_path
-        self.batch_size = batch_size
-        self.num_workers = num_workers
-        base_transform = [transforms.ToTensor(), transforms.Resize(image_size)]
+    def __init__(self, *, data_args, training_args):
+        self.data_path = data_args.dataset
+        self.batch_size = training_args.batch_size
+        self.num_workers = training_args.num_workers
+        base_transform = [
+            transforms.ToTensor(),
+            transforms.Resize(data_args.image_size),
+        ]
         self.rgb_transform = [
             *base_transform,
             transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
@@ -55,8 +49,8 @@ class DepthEstimationDataModule(pl.LightningDataModule):
             *base_transform,
             transforms.Normalize((5), (5)),
         ]
-        self.val_ratio = val_ratio
-        self.test_ratio = test_ratio
+        self.val_ratio = training_args.val_ratio
+        self.test_ratio = training_args.test_ratio
 
     def setup(self, stage):
         loader = DataMatLoader(self.data_path)

@@ -1,16 +1,8 @@
-from pathlib import Path
-
-import cv2 as cv
-import numpy as np
 import pytorch_lightning as pl
-import torch
 from pytorch_lightning.callbacks import LearningRateMonitor, ModelCheckpoint
-from torchvision import transforms
 
 from argument_parser import parse_args
 from data.data_module import DepthEstimationDataModule
-from data.loader import DataMatLoader
-from data.visualiser import visualise_depth
 from models.depth_mimo_unet_module import DepthMIMOUnetModule
 
 
@@ -36,7 +28,7 @@ def main():
 
     trainer = pl.Trainer(
         callbacks=metric_monitor_callbacks,
-        gpus=-1,
+        gpus=args.training.gpus,
     )
 
     if not args.training.eval_mode:

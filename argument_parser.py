@@ -62,6 +62,9 @@ def parse_args():
         "--num-workers", help="Number of workers", type=int, default=4
     )
     training.add_argument(
+        "--gpus", help="Number of gpus used for training", type=int, default=-1
+    )
+    training.add_argument(
         "--eval-mode",
         help="Enables evaluation mode for a checkpoint",
         action="store_true",

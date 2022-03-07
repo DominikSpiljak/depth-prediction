@@ -58,7 +58,6 @@ class DepthEstimationDataModule(pl.LightningDataModule):
         num_samples = len(loader)
         num_val_samples = int(num_samples * self.val_ratio)
         num_test_samples = int(num_samples * self.test_ratio)
-        indices = torch.arange(num_samples)
 
         num_train_samples_ = num_samples - num_val_samples
         train_indices_, val_indices = random_split(

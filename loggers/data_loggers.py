@@ -3,7 +3,7 @@ from data.visualiser import visualise_depth
 
 
 class ImageLogger:
-    def __init__(self, logger, max_batches_logged_per_epoch, prefix):
+    def __init__(self, max_batches_logged_per_epoch, prefix):
         self.max_batches_logged_per_epoch = max_batches_logged_per_epoch
         self.prefix = prefix
         self.current_log = []

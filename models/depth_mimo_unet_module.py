@@ -28,7 +28,7 @@ class DepthMIMOUnetModule(pl.LightningModule):
         self.model = MIMOUnet(
             **{k: v for k, v in vars(self.model_args).items() if v is not None}
         )
-        self.criterion = SILogLoss()
+        self.SILogcriterion = SILogLoss()
         self.setup_loggers()
 
     def setup_loggers(self):
@@ -39,18 +39,19 @@ class DepthMIMOUnetModule(pl.LightningModule):
         if not self.logging_args.disable_image_logging:
             self.validation_loggers.append(
                 ImageLogger(
-                    self.logger,
                     self.logging_args.max_images_logged_per_epoch,
                     "Validation",
                 )
             )
             self.test_loggers.append(
                 ImageLogger(
-                    self.logger,
                     self.logging_args.max_images_logged_per_epoch,
                     "Test",
                 )
             )
+
+    def criterion(self, predicted, target):
+        return self.SILogcriterion(predicted=predicted, target=target) + F.mse_loss(predicted, target)
 
     def log_metrics(self, loggers, outputs):
         for logger in loggers:

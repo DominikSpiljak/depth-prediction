@@ -3,13 +3,8 @@ import numpy as np
 
 
 def visualise_depth(*, depth_map, rgb_im=None, prediction=None, normalized=True):
-    if normalized:
-        depth_map = (depth_map + 1) / 2
 
     if prediction is not None:
-        if normalized:
-            prediction = (depth_map + 1) / 2
-
         depth_map = np.hstack((prediction, depth_map))
 
     min_val = depth_map.min()
@@ -26,6 +21,7 @@ def visualise_depth(*, depth_map, rgb_im=None, prediction=None, normalized=True)
 
     if normalized:
         rgb_im = (rgb_im + 1) / 2
+
     rgb_im = (rgb_im * 255).astype(np.uint8)
 
     return np.hstack((rgb_im, depth_color_map))

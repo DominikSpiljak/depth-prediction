@@ -45,10 +45,8 @@ class DepthEstimationDataModule(pl.LightningDataModule):
             *base_transform,
             transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
         ]
-        self.depth_transform = [
-            *base_transform,
-            transforms.Normalize((5), (5)),
-        ]
+        self.depth_transform = base_transform
+
         self.val_ratio = training_args.val_ratio
         self.test_ratio = training_args.test_ratio
 

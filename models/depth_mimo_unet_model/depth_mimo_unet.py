@@ -314,7 +314,7 @@ class MIMOUnet(nn.Module):
         out_scale2 = self.out_conv_scale2(db2_res_out)
         out_scale1 = self.out_conv_scale1(db1_out)
 
-        return torch.tanh(out_scale1), torch.tanh(out_scale2), torch.tanh(out_scale3)
+        return out_scale1, out_scale2, out_scale3
 
 
 if __name__ == "__main__":

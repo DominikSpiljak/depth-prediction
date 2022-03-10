@@ -283,10 +283,17 @@ class MIMOUnet(nn.Module):
         self.out_conv_scale3 = nn.Conv2d(
             in_channels=128, out_channels=1, kernel_size=3, padding="same"
         )
+        self.apply(MIMOUnet.init_weights)
+
+    @staticmethod
+    def init_weights(module):
+        if isinstance(module, nn.Conv2d):
+            nn.init.kaiming_normal_(module.weight)
+            module.bias.data.fill_(0.01)
 
     def forward(self, x):
-        x_2 = F.interpolate(x, scale_factor=0.5)
-        x_4 = F.interpolate(x, scale_factor=0.25)
+        x_2 = F.interpolate(x, scale_factor=0.5, recompute_scale_factor=True)
+        x_4 = F.interpolate(x, scale_factor=0.25, recompute_scale_factor=True)
 
         eb1_out = self.eb1(x)
         scm2_out = self.scm2(x_2)
@@ -297,13 +304,13 @@ class MIMOUnet(nn.Module):
 
         aff1_out = self.aff1(
             eb1_out,
-            F.interpolate(eb2_out, scale_factor=2),
-            F.interpolate(eb3_out, scale_factor=4),
+            F.interpolate(eb2_out, scale_factor=2, recompute_scale_factor=True),
+            F.interpolate(eb3_out, scale_factor=4, recompute_scale_factor=True),
         )
         aff2_out = self.aff2(
-            F.interpolate(eb1_out, scale_factor=0.5),
+            F.interpolate(eb1_out, scale_factor=0.5, recompute_scale_factor=True),
             eb2_out,
-            F.interpolate(eb3_out, scale_factor=2),
+            F.interpolate(eb3_out, scale_factor=2, recompute_scale_factor=True),
         )
 
         db3_out, db3_res_out = self.db3(eb3_out)
@@ -314,13 +321,19 @@ class MIMOUnet(nn.Module):
         out_scale2 = self.out_conv_scale2(db2_res_out)
         out_scale1 = self.out_conv_scale1(db1_out)
 
-        return out_scale1, out_scale2, out_scale3
+        return torch.tanh(out_scale1), torch.tanh(out_scale2), torch.tanh(out_scale3)
 
 
 if __name__ == "__main__":
-    device = torch.device("cuda")
+    device = torch.device("cpu")
     model = MIMOUnet()
     model.to(device)
-    x = torch.randn(2, 3, 240, 320, device=device)
+    x = torch.rand(2, 3, 240, 320, device=device) * 2 - 1
     out = model(x)
-    print(out[0].shape, out[1].shape, out[2].shape)
+    out = list(out)
+    out[0] = out[0] * 5 + 5
+    out[1] = out[1] * 5 + 5
+    out[2] = out[2] * 5 + 5
+    print(f"Output 0: {out[0].shape}, max={out[0].max()}, min={out[0].min()}")
+    print(f"Output 1: {out[1].shape}, max={out[1].max()}, min={out[1].min()}")
+    print(f"Output 2: {out[2].shape}, max={out[2].max()}, min={out[2].min()}")

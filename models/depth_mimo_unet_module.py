@@ -63,8 +63,12 @@ class DepthMIMOUnetModule(pl.LightningModule):
 
         prediction, prediction_2, prediction_4 = self.model(rgb_im)
 
-        depth_map_2 = F.interpolate(depth_map, scale_factor=0.5)
-        depth_map_4 = F.interpolate(depth_map, scale_factor=0.25)
+        depth_map_2 = F.interpolate(
+            depth_map, scale_factor=0.5, recompute_scale_factor=True
+        )
+        depth_map_4 = F.interpolate(
+            depth_map, scale_factor=0.25, recompute_scale_factor=True
+        )
 
         loss = (
             self.criterion(predicted=prediction, target=depth_map)

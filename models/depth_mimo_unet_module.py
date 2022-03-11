@@ -23,6 +23,8 @@ class DepthMIMOUnetModule(pl.LightningModule):
             model_args = Namespace(**model_args)
 
         self.model_args = model_args
+        self.save_hyperparameters(self.model_args)
+
         self.training_args = training_args
         self.logging_args = logging_args
         self.model = MIMOUnet(

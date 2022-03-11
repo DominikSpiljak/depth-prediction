@@ -288,7 +288,7 @@ class MIMOUnet(nn.Module):
     @staticmethod
     def init_weights(module):
         if isinstance(module, nn.Conv2d):
-            nn.init.kaiming_normal_(module.weight)
+            nn.init.kaiming_uniform_(module.weight)
             module.bias.data.fill_(0.01)
 
     def forward(self, x):

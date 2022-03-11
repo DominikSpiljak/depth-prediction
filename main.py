@@ -11,9 +11,19 @@ def main():
     data_module = DepthEstimationDataModule(
         data_args=args.data, training_args=args.training
     )
-    depth_mimounet_module = DepthMIMOUnetModule(
-        model_args=args.model, training_args=args.training, logging_args=args.logging
-    )
+    if args.training.checkpoint:
+        depth_mimounet_module = DepthMIMOUnetModule.load_from_checkpoint(
+            args.training.checkpoint,
+            training_args=args.training,
+            logging_args=args.logging,
+            map_location="cpu" if args.training.gpus == 0 else "cuda",
+        )
+    else:
+        depth_mimounet_module = DepthMIMOUnetModule(
+            model_args=args.model,
+            training_args=args.training,
+            logging_args=args.logging,
+        )
 
     metric_monitor_callbacks = [
         ModelCheckpoint(

@@ -3,17 +3,19 @@ import torch.nn as nn
 
 
 class SILogLoss(nn.Module):
-    def __init__(self):
+    def __init__(self, variance_focus=0.85):
         super().__init__()
+        self.variance_focus = variance_focus
 
     def forward(self, predicted, target):
 
         mask = predicted > 1e-3
 
-        g = torch.log(predicted[mask]) - torch.log(target[mask])
+        d = torch.log(predicted[mask]) - torch.log(target[mask])
 
-        Dg = torch.var(g) + 0.15 * torch.pow(torch.mean(g), 2)
-        return 10 * torch.sqrt(Dg)
+        return (
+            torch.sqrt((d**2).mean() - self.variance_focus * (d.mean() ** 2)) * 10.0
+        )
 
 
 class Criterion(nn.Module):

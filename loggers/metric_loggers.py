@@ -37,9 +37,7 @@ class DeltaError(Metric):
 
     def forward(self, pred, target):
         thresh = torch.max((target / pred), (pred / target))
-        return torch.sum(thresh < self.less_than_value**self.exponent).float() / len(
-            thresh
-        )
+        return (thresh < self.less_than_value**self.exponent).float().mean()
 
 
 class RelativeAbsoluteError(Metric):
@@ -48,7 +46,7 @@ class RelativeAbsoluteError(Metric):
         self.metric_name = "Relative Absolute Error"
 
     def forward(self, pred, target):
-        return torch.mean(torch.abs(pred - target) / target)
+        return torch.mean(torch.abs(pred - target) / target, dim=(2, 3)).mean()
 
 
 class RelativeSquaredError(Metric):
@@ -57,7 +55,7 @@ class RelativeSquaredError(Metric):
         self.metric_name = "Relative Squared Error"
 
     def forward(self, pred, target):
-        return torch.mean(torch.pow(pred - target, 2) / target)
+        return torch.mean(torch.pow(pred - target, 2) / target, dim=(2, 3)).mean()
 
 
 class RootMeanSquaredError(Metric):
@@ -66,7 +64,7 @@ class RootMeanSquaredError(Metric):
         self.metric_name = "Root Mean Squared Error"
 
     def forward(self, pred, target):
-        return torch.sqrt(torch.mean(torch.pow(pred - target, 2)))
+        return torch.sqrt(torch.mean(torch.pow(pred - target, 2), dim=(2, 3))).mean()
 
 
 class LogRootMeanSquaredError(Metric):
@@ -75,7 +73,9 @@ class LogRootMeanSquaredError(Metric):
         self.metric_name = "Log Root Mean Squared Error"
 
     def forward(self, pred, target):
-        return torch.sqrt(torch.mean(torch.pow(torch.log(pred) - torch.log(target), 2)))
+        return torch.sqrt(
+            torch.mean(torch.pow(torch.log(pred) - torch.log(target), 2), dim=(2, 3))
+        ).mean()
 
 
 class Log10Error(Metric):
@@ -84,16 +84,6 @@ class Log10Error(Metric):
         self.metric_name = "Log10 Error"
 
     def forward(self, pred, target):
-        return torch.mean(torch.abs(torch.log10(pred) - torch.log10(target)))
-
-
-class SILogError(Metric):
-    def __init__(self):
-        super().__init__()
-        self.metric_name = "Scale Invariant Log Error"
-
-    def forward(self, pred, target):
-        diff_log = torch.log(pred) - torch.log(target)
-        return torch.sqrt(
-            torch.pow(diff_log, 2).mean() - 0.5 * torch.pow(diff_log.mean(), 2)
-        )
+        return torch.sum(
+            torch.abs(torch.log10(pred) - torch.log10(target)), dim=(2, 3)
+        ).mean()

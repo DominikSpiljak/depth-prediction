@@ -12,7 +12,6 @@ from loggers.metric_loggers import (
     RelativeAbsoluteError,
     RelativeSquaredError,
     RootMeanSquaredError,
-    SILogError,
 )
 from models.depth_mimo_unet_model.depth_mimo_unet import MIMOUnet
 from models.depth_mimo_unet_model.losses import Criterion
@@ -72,7 +71,6 @@ class DepthMIMOUnetModule(pl.LightningModule):
                     RelativeAbsoluteError(),
                     RelativeSquaredError(),
                     RootMeanSquaredError(),
-                    SILogError(),
                 ]
             )
             self.test_loggers.extend(
@@ -85,7 +83,6 @@ class DepthMIMOUnetModule(pl.LightningModule):
                     RelativeAbsoluteError(),
                     RelativeSquaredError(),
                     RootMeanSquaredError(),
-                    SILogError(),
                 ]
             )
 

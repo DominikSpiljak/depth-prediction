@@ -5,6 +5,15 @@ import torch
 import torch.nn.functional as F
 
 from loggers.data_loggers import ImageLogger
+from loggers.metric_loggers import (
+    DeltaError,
+    Log10Error,
+    LogRootMeanSquaredError,
+    RelativeAbsoluteError,
+    RelativeSquaredError,
+    RootMeanSquaredError,
+    SILogError,
+)
 from models.depth_mimo_unet_model.depth_mimo_unet import MIMOUnet
 from models.depth_mimo_unet_model.losses import Criterion
 
@@ -31,13 +40,13 @@ class DepthMIMOUnetModule(pl.LightningModule):
             **{k: v for k, v in vars(self.model_args).items() if v is not None}
         )
         self.criterion = Criterion()
-        self.setup_loggers()
-
-    def setup_loggers(self):
         self.train_loggers = []
         self.validation_loggers = []
         self.test_loggers = []
 
+        self.setup_loggers()
+
+    def setup_loggers(self):
         if not self.logging_args.disable_image_logging:
             self.validation_loggers.append(
                 ImageLogger(
@@ -50,6 +59,34 @@ class DepthMIMOUnetModule(pl.LightningModule):
                     self.logging_args.max_images_logged_per_epoch,
                     "Test",
                 )
+            )
+
+        if not self.logging_args.disable_metric_collection:
+            self.validation_loggers.extend(
+                [
+                    DeltaError(exponent=1),
+                    DeltaError(exponent=2),
+                    DeltaError(exponent=3),
+                    Log10Error(),
+                    LogRootMeanSquaredError(),
+                    RelativeAbsoluteError(),
+                    RelativeSquaredError(),
+                    RootMeanSquaredError(),
+                    SILogError(),
+                ]
+            )
+            self.test_loggers.extend(
+                [
+                    DeltaError(exponent=1),
+                    DeltaError(exponent=2),
+                    DeltaError(exponent=3),
+                    Log10Error(),
+                    LogRootMeanSquaredError(),
+                    RelativeAbsoluteError(),
+                    RelativeSquaredError(),
+                    RootMeanSquaredError(),
+                    SILogError(),
+                ]
             )
 
     def log_metrics(self, loggers, outputs):
@@ -93,8 +130,6 @@ class DepthMIMOUnetModule(pl.LightningModule):
     def training_step(self, batch, *args, **kwargs):
         indices, rgb_im, prediction, depth_map, loss = self.forward(batch)
 
-        # TODO: Metrics
-
         return {
             "indices": indices,
             "loss": loss,
@@ -106,8 +141,6 @@ class DepthMIMOUnetModule(pl.LightningModule):
     def validation_step(self, batch, *args, **kwargs):
         indices, rgb_im, prediction, depth_map, loss = self.forward(batch)
 
-        # TODO: Metrics
-
         return {
             "indices": indices,
             "loss": loss,
@@ -118,8 +151,6 @@ class DepthMIMOUnetModule(pl.LightningModule):
 
     def test_step(self, batch, *args, **kwargs):
         indices, rgb_im, prediction, depth_map, loss = self.forward(batch)
-
-        # TODO: Metrics
 
         return {
             "indices": indices,

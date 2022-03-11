@@ -85,6 +85,11 @@ def parse_args():
         help="Wether to disable image logging",
         action="store_true",
     )
+    logging.add_argument(
+        "--disable-metric-collection",
+        help="Wether to metric logging",
+        action="store_true",
+    )
 
     args = parser.parse_args()
 

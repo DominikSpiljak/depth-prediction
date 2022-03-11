@@ -283,13 +283,6 @@ class MIMOUnet(nn.Module):
         self.out_conv_scale3 = nn.Conv2d(
             in_channels=128, out_channels=1, kernel_size=3, padding="same"
         )
-        self.apply(MIMOUnet.init_weights)
-
-    @staticmethod
-    def init_weights(module):
-        if isinstance(module, nn.Conv2d):
-            nn.init.kaiming_uniform_(module.weight)
-            module.bias.data.fill_(0.01)
 
     def forward(self, x):
         x_2 = F.interpolate(x, scale_factor=0.5, recompute_scale_factor=True)
@@ -325,7 +318,7 @@ class MIMOUnet(nn.Module):
 
 
 if __name__ == "__main__":
-    device = torch.device("cpu")
+    device = torch.device("cuda")
     model = MIMOUnet()
     model.to(device)
     x = torch.rand(2, 3, 240, 320, device=device) * 2 - 1

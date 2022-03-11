@@ -22,7 +22,7 @@ class Criterion(nn.Module):
     def __init__(self):
         super().__init__()
         self.losses = [SILogLoss(), nn.L1Loss(reduction="mean")]
-        self.factors = [1, 3]
+        self.factors = [1, 0.5]
 
     def forward(self, predicted, target):
         loss_accumulated = 0

@@ -158,9 +158,9 @@ class DepthMIMOUnetModule(pl.LightningModule):
         }
 
     def training_step_end(self, outputs):
-        self.log_metrics(self.validation_loggers, outputs)
+        self.log_metrics(self.train_loggers, outputs)
         loss = outputs["loss"]
-        self.log("Validation loss", loss, batch_size=self.training_args.batch_size)
+        self.log("Train loss", loss, batch_size=self.training_args.batch_size)
         return loss
 
     def on_train_epoch_end(self):

@@ -21,7 +21,7 @@ class Metric:
         if self.metric_name is None:
             raise NotImplementedError("Metric name needs to be specified")
         logger.experiment.add_scalars(
-            f"{self.prefix} {self.metric_name}",
+            f"{self.prefix}/{self.metric_name}",
             {self.metric_name: self.aggregated / self.num_steps},
             global_step=epoch,
         )

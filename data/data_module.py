@@ -12,14 +12,14 @@ class DepthEstimationDataset(Dataset):
         self,
         loader,
         indices,
-        rgb_transformation,
-        depth_transformation,
+        base_transformation,
+        rgb_normalization,
         augmentations=None,
     ):
         self.loader = loader
         self.indices = indices
-        self.rgb_transformation = rgb_transformation
-        self.depth_transformation = depth_transformation
+        self.base_transformation = base_transformation
+        self.rgb_normalization = rgb_normalization
         self.augmentations = augmentations
 
     def __len__(self):
@@ -27,13 +27,13 @@ class DepthEstimationDataset(Dataset):
 
     def __getitem__(self, idx):
         rgb_image, depth_map = self.loader[self.indices[idx]]
-        rgb_image = self.rgb_transformation(rgb_image.copy())
-        depth_map = self.depth_transformation(depth_map.copy())
+        rgb_image = self.base_transformation(rgb_image.copy())
+        depth_map = self.base_transformation(depth_map.copy())
 
         if self.augmentations:
             rgb_image, depth_map = self.augmentations(rgb_image, depth_map)
 
-        return (self.indices[idx], rgb_image, depth_map)
+        return (self.indices[idx], self.rgb_normalization(rgb_image), depth_map)
 
 
 def collate_fn(batch):
@@ -48,15 +48,11 @@ class DepthEstimationDataModule(pl.LightningDataModule):
         self.data_path = data_args.dataset
         self.batch_size = training_args.batch_size
         self.num_workers = training_args.num_workers
-        base_transform = [
+        self.base_transformation = [
             transforms.ToTensor(),
             transforms.Resize(data_args.image_size),
         ]
-        self.rgb_transform = [
-            *base_transform,
-            transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
-        ]
-        self.depth_transform = base_transform
+        self.rgb_normalization = transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
 
         self.augmentations = get_augmentations(data_args)
 
@@ -87,21 +83,21 @@ class DepthEstimationDataModule(pl.LightningDataModule):
         self.train_dataset = DepthEstimationDataset(
             loader=loader,
             indices=train_indices,
-            rgb_transformation=transforms.Compose(self.rgb_transform),
-            depth_transformation=transforms.Compose(self.depth_transform),
+            base_transformation=transforms.Compose(self.base_transformation),
+            rgb_normalization=self.rgb_normalization,
             augmentations=self.augmentations,
         )
         self.val_dataset = DepthEstimationDataset(
             loader=loader,
             indices=val_indices,
-            rgb_transformation=transforms.Compose(self.rgb_transform),
-            depth_transformation=transforms.Compose(self.depth_transform),
+            base_transformation=transforms.Compose(self.base_transformation),
+            rgb_normalization=self.rgb_normalization,
         )
         self.test_dataset = DepthEstimationDataset(
             loader=loader,
             indices=test_indices,
-            rgb_transformation=transforms.Compose(self.rgb_transform),
-            depth_transformation=transforms.Compose(self.depth_transform),
+            base_transformation=transforms.Compose(self.base_transformation),
+            rgb_normalization=self.rgb_normalization,
         )
 
     def train_dataloader(self):

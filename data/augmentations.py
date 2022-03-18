@@ -95,21 +95,21 @@ def get_augmentations(args):
     augmentations = AugmentationsCompose()
 
     if args.aug_gaussian_blur:
-        augmentations.append(GaussianBlur(p=0.1, kernel_size=(5, 9), sigma=(0.1, 5)))
+        augmentations.append(GaussianBlur(p=0.2, kernel_size=(5, 9), sigma=(0.1, 5)))
 
     if args.aug_horizontal_flip:
-        augmentations.append(RandomHorizontalFlip(p=0.1))
+        augmentations.append(RandomHorizontalFlip(p=0.2))
 
     if args.aug_vertical_flip:
-        augmentations.append(RandomVerticalFlip(p=0.1))
+        augmentations.append(RandomVerticalFlip(p=0.2))
 
     if args.aug_adjust_gamma:
-        augmentations.append(AdjustGamma(p=0.1, gamma=(0.8, 1.2)))
+        augmentations.append(AdjustGamma(p=0.2, gamma=(0.4, 1.6)))
 
     if args.aug_adjust_hue:
-        augmentations.append(AdjustHue(p=0.1, hue=(-0.5, 0.5)))
+        augmentations.append(AdjustHue(p=0.2, hue=(-0.5, 0.5)))
 
     if args.aug_adjust_contrast:
-        augmentations.append(AdjustContrast(p=0.1, contrast=(0.6, 1.4)))
+        augmentations.append(AdjustContrast(p=0.2, contrast=(0.4, 1.6)))
 
     return augmentations

@@ -26,6 +26,6 @@ class ImageLogger:
     def compute(self, epoch, logger):
         images = np.vstack(self.current_log)
         logger.experiment.add_image(
-            f"{self.prefix} images, epoch={epoch}", np.moveaxis(images, -1, 0)
+            f"{self.prefix}/epoch={epoch}", np.moveaxis(images, -1, 0)
         )
         self.current_log = []

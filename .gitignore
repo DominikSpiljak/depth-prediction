@@ -1,1 +1,4 @@
 lightning_logs/
+# TODO: write real tests (at least 50% coverage)
+test_augmentations.py
+test_argparse.py

@@ -47,6 +47,12 @@ class DepthMIMOUnetModule(pl.LightningModule):
 
     def setup_loggers(self):
         if not self.logging_args.disable_image_logging:
+            self.train_loggers.append(
+                ImageLogger(
+                    self.logging_args.max_images_logged_per_epoch,
+                    "Train",
+                )
+            )
             self.validation_loggers.append(
                 ImageLogger(
                     self.logging_args.max_images_logged_per_epoch,
@@ -61,28 +67,40 @@ class DepthMIMOUnetModule(pl.LightningModule):
             )
 
         if not self.logging_args.disable_metric_collection:
+            self.train_loggers.extend(
+                [
+                    DeltaError(prefix="Train", exponent=1),
+                    DeltaError(prefix="Train", exponent=2),
+                    DeltaError(prefix="Train", exponent=3),
+                    Log10Error(prefix="Train"),
+                    LogRootMeanSquaredError(prefix="Train"),
+                    RelativeAbsoluteError(prefix="Train"),
+                    RelativeSquaredError(prefix="Train"),
+                    RootMeanSquaredError(prefix="Train"),
+                ]
+            )
             self.validation_loggers.extend(
                 [
-                    DeltaError(exponent=1),
-                    DeltaError(exponent=2),
-                    DeltaError(exponent=3),
-                    Log10Error(),
-                    LogRootMeanSquaredError(),
-                    RelativeAbsoluteError(),
-                    RelativeSquaredError(),
-                    RootMeanSquaredError(),
+                    DeltaError(prefix="Validation", exponent=1),
+                    DeltaError(prefix="Validation", exponent=2),
+                    DeltaError(prefix="Validation", exponent=3),
+                    Log10Error(prefix="Validation"),
+                    LogRootMeanSquaredError(prefix="Validation"),
+                    RelativeAbsoluteError(prefix="Validation"),
+                    RelativeSquaredError(prefix="Validation"),
+                    RootMeanSquaredError(prefix="Validation"),
                 ]
             )
             self.test_loggers.extend(
                 [
-                    DeltaError(exponent=1),
-                    DeltaError(exponent=2),
-                    DeltaError(exponent=3),
-                    Log10Error(),
-                    LogRootMeanSquaredError(),
-                    RelativeAbsoluteError(),
-                    RelativeSquaredError(),
-                    RootMeanSquaredError(),
+                    DeltaError(prefix="Test", exponent=1),
+                    DeltaError(prefix="Test", exponent=2),
+                    DeltaError(prefix="Test", exponent=3),
+                    Log10Error(prefix="Test"),
+                    LogRootMeanSquaredError(prefix="Test"),
+                    RelativeAbsoluteError(prefix="Test"),
+                    RelativeSquaredError(prefix="Test"),
+                    RootMeanSquaredError(prefix="Test"),
                 ]
             )
 

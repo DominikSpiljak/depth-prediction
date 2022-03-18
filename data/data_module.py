@@ -3,26 +3,37 @@ import torch
 from torch.utils.data import DataLoader, Dataset, random_split
 from torchvision import transforms
 
+from data.augmentations import get_augmentations
 from data.loader import DataMatLoader
 
 
 class DepthEstimationDataset(Dataset):
-    def __init__(self, loader, indices, rgb_transformation, depth_transformation):
+    def __init__(
+        self,
+        loader,
+        indices,
+        rgb_transformation,
+        depth_transformation,
+        augmentations=None,
+    ):
         self.loader = loader
         self.indices = indices
         self.rgb_transformation = rgb_transformation
         self.depth_transformation = depth_transformation
+        self.augmentations = augmentations
 
     def __len__(self):
         return len(self.indices)
 
     def __getitem__(self, idx):
         rgb_image, depth_map = self.loader[self.indices[idx]]
-        return (
-            self.indices[idx],
-            self.rgb_transformation(rgb_image.copy()),
-            self.depth_transformation(depth_map.copy()),
-        )
+        rgb_image = self.rgb_transformation(rgb_image.copy())
+        depth_map = self.depth_transformation(depth_map.copy())
+
+        if self.augmentations:
+            rgb_image, depth_map = self.augmentations(rgb_image, depth_map)
+
+        return (self.indices[idx], rgb_image, depth_map)
 
 
 def collate_fn(batch):
@@ -46,6 +57,8 @@ class DepthEstimationDataModule(pl.LightningDataModule):
             transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
         ]
         self.depth_transform = base_transform
+
+        self.augmentations = get_augmentations(data_args)
 
         self.val_ratio = training_args.val_ratio
         self.test_ratio = training_args.test_ratio
@@ -76,6 +89,7 @@ class DepthEstimationDataModule(pl.LightningDataModule):
             indices=train_indices,
             rgb_transformation=transforms.Compose(self.rgb_transform),
             depth_transformation=transforms.Compose(self.depth_transform),
+            augmentations=self.augmentations,
         )
         self.val_dataset = DepthEstimationDataset(
             loader=loader,

@@ -2,7 +2,8 @@ import torch
 
 
 class Metric:
-    def __init__(self):
+    def __init__(self, prefix):
+        self.prefix = prefix
         self.metric_name = None
         self.aggregated = 0
         self.num_steps = 0
@@ -20,7 +21,7 @@ class Metric:
         if self.metric_name is None:
             raise NotImplementedError("Metric name needs to be specified")
         logger.experiment.add_scalars(
-            self.metric_name,
+            f"{self.prefix} {self.metric_name}",
             {self.metric_name: self.aggregated / self.num_steps},
             global_step=epoch,
         )
@@ -29,20 +30,20 @@ class Metric:
 
 
 class DeltaError(Metric):
-    def __init__(self, less_than_value=1.25, exponent=1):
-        super().__init__()
+    def __init__(self, prefix, less_than_value=1.25, exponent=1):
+        super().__init__(prefix)
         self.metric_name = f"delta < {less_than_value} ^ {exponent}"
         self.less_than_value = less_than_value
         self.exponent = exponent
 
     def forward(self, pred, target):
         thresh = torch.max((target / pred), (pred / target))
-        return (thresh < self.less_than_value**self.exponent).float().mean()
+        return (thresh < self.less_than_value ** self.exponent).float().mean()
 
 
 class RelativeAbsoluteError(Metric):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, prefix):
+        super().__init__(prefix)
         self.metric_name = "Relative Absolute Error"
 
     def forward(self, pred, target):
@@ -50,8 +51,8 @@ class RelativeAbsoluteError(Metric):
 
 
 class RelativeSquaredError(Metric):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, prefix):
+        super().__init__(prefix)
         self.metric_name = "Relative Squared Error"
 
     def forward(self, pred, target):
@@ -59,8 +60,8 @@ class RelativeSquaredError(Metric):
 
 
 class RootMeanSquaredError(Metric):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, prefix):
+        super().__init__(prefix)
         self.metric_name = "Root Mean Squared Error"
 
     def forward(self, pred, target):
@@ -68,8 +69,8 @@ class RootMeanSquaredError(Metric):
 
 
 class LogRootMeanSquaredError(Metric):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, prefix):
+        super().__init__(prefix)
         self.metric_name = "Log Root Mean Squared Error"
 
     def forward(self, pred, target):
@@ -79,11 +80,11 @@ class LogRootMeanSquaredError(Metric):
 
 
 class Log10Error(Metric):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, prefix):
+        super().__init__(prefix)
         self.metric_name = "Log10 Error"
 
     def forward(self, pred, target):
-        return torch.sum(
+        return torch.mean(
             torch.abs(torch.log10(pred) - torch.log10(target)), dim=(2, 3)
         ).mean()

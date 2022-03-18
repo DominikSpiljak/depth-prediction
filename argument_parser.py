@@ -33,6 +33,42 @@ def parse_args():
         default=[240, 320],
     )
 
+    data.add_argument(
+        "--aug-gaussian-blur",
+        help="Wether to use Gaussian blur as one of the augmentations",
+        action="store_true",
+    )
+
+    data.add_argument(
+        "--aug-horizontal-flip",
+        help="Wether to use Horizontal flip as one of the augmentations",
+        action="store_true",
+    )
+
+    data.add_argument(
+        "--aug-vertical-flip",
+        help="Wether to use Vertical flip as one of the augmentations",
+        action="store_true",
+    )
+
+    data.add_argument(
+        "--aug-adjust-gamma",
+        help="Wether to use Gamma adjusting as one of the augmentations",
+        action="store_true",
+    )
+
+    data.add_argument(
+        "--aug-adjust-hue",
+        help="Wether to use Hue adjusting as one of the augmentations",
+        action="store_true",
+    )
+
+    data.add_argument(
+        "--aug-adjust-contrast",
+        help="Wether to use Contrast adjusting as one of the augmentations",
+        action="store_true",
+    )
+
     model.add_argument(
         "--num-res-blocks",
         help="Number of ResNet blocks inside MIMOUnet block",

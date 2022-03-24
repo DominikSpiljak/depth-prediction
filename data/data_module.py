@@ -4,20 +4,23 @@ from torch.utils.data import DataLoader, Dataset, random_split
 from torchvision import transforms
 
 from data.augmentations import get_augmentations
-from data.loader import DataMatLoader
+from data.loader import DataNYUDepthLoader, DataCityScapesLoader
 
 
 class DepthEstimationDataset(Dataset):
     def __init__(
         self,
         loader,
-        indices,
         base_transformation,
         rgb_normalization,
+        indices=None,
         augmentations=None,
     ):
         self.loader = loader
-        self.indices = indices
+        if indices is None:
+            self.indices = list(range(len(loader)))
+        else:
+            self.indices = indices
         self.base_transformation = base_transformation
         self.rgb_normalization = rgb_normalization
         self.augmentations = augmentations
@@ -33,7 +36,7 @@ class DepthEstimationDataset(Dataset):
         if self.augmentations:
             rgb_image, depth_map = self.augmentations(rgb_image, depth_map)
 
-        return (self.indices[idx], self.rgb_normalization(rgb_image), depth_map)
+        return self.indices[idx], self.rgb_normalization(rgb_image), depth_map
 
 
 def collate_fn(batch):
@@ -50,7 +53,7 @@ class DepthEstimationDataModule(pl.LightningDataModule):
         self.num_workers = training_args.num_workers
         self.base_transformation = [
             transforms.ToTensor(),
-            transforms.Resize(data_args.image_size),
+            transforms.Resize(list(map(int, data_args.image_size))),
         ]
         self.rgb_normalization = transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
 
@@ -60,7 +63,14 @@ class DepthEstimationDataModule(pl.LightningDataModule):
         self.test_ratio = training_args.test_ratio
 
     def setup(self, stage):
-        loader = DataMatLoader(self.data_path)
+        if self.data_path.name == "NYU-depth":
+            self.__setup_nyu_depth(stage)
+
+        elif self.data_path.name == "Cityscapes":
+            self.__setup_cityscapes_depth(stage)
+
+    def __setup_nyu_depth(self, stage):
+        loader = DataNYUDepthLoader(self.data_path)
 
         num_samples = len(loader)
         num_val_samples = int(num_samples * self.val_ratio)
@@ -96,6 +106,24 @@ class DepthEstimationDataModule(pl.LightningDataModule):
         self.test_dataset = DepthEstimationDataset(
             loader=loader,
             indices=test_indices,
+            base_transformation=transforms.Compose(self.base_transformation),
+            rgb_normalization=self.rgb_normalization,
+        )
+
+    def __setup_cityscapes_depth(self, stage):
+        self.train_dataset = DepthEstimationDataset(
+            loader=DataCityScapesLoader(self.data_path, "train"),
+            base_transformation=transforms.Compose(self.base_transformation),
+            rgb_normalization=self.rgb_normalization,
+            augmentations=self.augmentations,
+        )
+        self.val_dataset = DepthEstimationDataset(
+            loader=DataCityScapesLoader(self.data_path, "val"),
+            base_transformation=transforms.Compose(self.base_transformation),
+            rgb_normalization=self.rgb_normalization,
+        )
+        self.test_dataset = DepthEstimationDataset(
+            loader=DataCityScapesLoader(self.data_path, "test"),
             base_transformation=transforms.Compose(self.base_transformation),
             rgb_normalization=self.rgb_normalization,
         )

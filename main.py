@@ -29,7 +29,7 @@ def main():
         ModelCheckpoint(
             save_last=True,
             verbose=True,
-            monitor="Validation loss",
+            monitor="Validation/loss",
             save_top_k=args.logging.save_top_k,
             mode="min",
         ),

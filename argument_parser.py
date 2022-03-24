@@ -24,7 +24,7 @@ def parse_args():
         "--dataset",
         help="Path to .mat dataset file",
         type=Path,
-        default=Path.home() / "datasets/NYU-depth/nyu_depth_v2_labeled.mat",
+        default=Path.home() / "datasets/NYU-depth",
     )
     data.add_argument(
         "--image-size",
@@ -67,6 +67,20 @@ def parse_args():
         "--aug-adjust-contrast",
         help="Wether to use Contrast adjusting as one of the augmentations",
         action="store_true",
+    )
+
+    model.add_argument(
+        "--min-depth",
+        help="Minimum that a depth can be in ground truth maps",
+        default=0,
+        type=float,
+    )
+
+    model.add_argument(
+        "--max-depth",
+        help="Maximum that a depth can be in ground truth maps",
+        default=10,
+        type=float,
     )
 
     model.add_argument(

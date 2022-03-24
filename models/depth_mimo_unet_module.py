@@ -117,10 +117,6 @@ class DepthMIMOUnetModule(pl.LightningModule):
 
         prediction, prediction_2, prediction_4 = self.model(rgb_im)
 
-        prediction_scaled = (prediction + 1) * 5
-        prediction_scaled_2 = (prediction_2 + 1) * 5
-        prediction_scaled_4 = (prediction_4 + 1) * 5
-
         depth_map_2 = F.interpolate(
             depth_map, scale_factor=0.5, recompute_scale_factor=True
         )
@@ -129,15 +125,15 @@ class DepthMIMOUnetModule(pl.LightningModule):
         )
 
         loss = (
-            self.criterion(predicted=prediction_scaled, target=depth_map)
-            + self.criterion(predicted=prediction_scaled_2, target=depth_map_2)
-            + self.criterion(predicted=prediction_scaled_4, target=depth_map_4)
+            self.criterion(predicted=prediction, target=depth_map)
+            + self.criterion(predicted=prediction_2, target=depth_map_2)
+            + self.criterion(predicted=prediction_4, target=depth_map_4)
         ) / 3
 
         return (
             indices,
             rgb_im.cpu(),
-            prediction_scaled.detach().cpu(),
+            prediction.detach().cpu(),
             depth_map.cpu(),
             loss,
         )
@@ -212,5 +208,5 @@ class DepthMIMOUnetModule(pl.LightningModule):
         return {
             "optimizer": optimizer,
             "lr_scheduler": scheduler,
-            "monitor": "Validation loss",
+            "monitor": "Validation/loss",
         }

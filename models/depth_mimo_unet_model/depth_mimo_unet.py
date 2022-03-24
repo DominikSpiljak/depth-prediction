@@ -245,8 +245,11 @@ class DecoderBlockResidualUpscale(nn.Module):
 
 
 class MIMOUnet(nn.Module):
-    def __init__(self, num_res_blocks=8):
+    def __init__(self, min_depth, max_depth, num_res_blocks=8):
         super().__init__()
+
+        self.min_depth = min_depth
+        self.max_depth = max_depth
 
         self.scm2 = ShallowConvolutionalModule(in_channels=3, out_channels=64)
         self.scm3 = ShallowConvolutionalModule(in_channels=3, out_channels=128)
@@ -314,19 +317,23 @@ class MIMOUnet(nn.Module):
         out_scale2 = self.out_conv_scale2(db2_res_out)
         out_scale1 = self.out_conv_scale1(db1_out)
 
-        return torch.tanh(out_scale1), torch.tanh(out_scale2), torch.tanh(out_scale3)
+        return (
+            (torch.tanh(out_scale1) + 1 / 2) * (self.max_depth - self.min_depth)
+            + self.min_depth,
+            (torch.tanh(out_scale2) + 1 / 2) * (self.max_depth - self.min_depth)
+            + self.min_depth,
+            (torch.tanh(out_scale3) + 1 / 2) * (self.max_depth - self.min_depth)
+            + self.min_depth,
+        )
 
 
 if __name__ == "__main__":
     device = torch.device("cuda")
-    model = MIMOUnet()
+    model = MIMOUnet(min_depth=0, max_depth=1)
     model.to(device)
     x = torch.rand(2, 3, 240, 320, device=device) * 2 - 1
     out = model(x)
     out = list(out)
-    out[0] = out[0] * 5 + 5
-    out[1] = out[1] * 5 + 5
-    out[2] = out[2] * 5 + 5
     print(f"Output 0: {out[0].shape}, max={out[0].max()}, min={out[0].min()}")
     print(f"Output 1: {out[1].shape}, max={out[1].max()}, min={out[1].min()}")
     print(f"Output 2: {out[2].shape}, max={out[2].max()}, min={out[2].min()}")

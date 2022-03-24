@@ -8,7 +8,7 @@ class SILogLoss(nn.Module):
 
     def forward(self, predicted, target):
 
-        mask = predicted > 1e-3
+        mask = torch.logical_and(predicted > 1e-3, target > 1e-3)
 
         g = torch.log(predicted[mask]) - torch.log(target[mask])
 
@@ -19,8 +19,8 @@ class SILogLoss(nn.Module):
 class Criterion(nn.Module):
     def __init__(self):
         super().__init__()
-        self.losses = [SILogLoss(), nn.L1Loss(reduction="mean")]
-        self.factors = [1, 3]
+        self.losses = [SILogLoss()]
+        self.factors = [1]
 
     def forward(self, predicted, target):
         loss_accumulated = 0

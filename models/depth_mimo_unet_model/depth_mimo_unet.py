@@ -40,9 +40,6 @@ class ResidualBlocks(nn.Module):
         return self.res_blocks(x)
 
 
-# TODO: Write a pl module
-
-
 class EncoderBlock(nn.Module):
     def __init__(self, in_channels, out_channels, num_res_blocks):
         super().__init__()

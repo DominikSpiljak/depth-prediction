@@ -39,6 +39,7 @@ class DataCityScapesLoader:
             )
 
     def __getitem__(self, key):
+        # TODO: Fix red and blue shifted
         rgb_image = cv.imread(self.rgb_paths[key])
         disparity_image = cv.imread(self.depth_paths[key], cv.IMREAD_UNCHANGED).astype(
             np.float32

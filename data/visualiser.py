@@ -5,8 +5,6 @@ import numpy as np
 def visualise_depth(*, depth_map, rgb_im=None, prediction=None, normalized=True):
 
     if prediction is not None:
-        print("Prediction: ", prediction.max(), prediction.min())
-        print("Depth map: ", depth_map.max(), depth_map.min())
         depth_map = np.hstack((prediction, depth_map))
 
     min_val = depth_map.min()

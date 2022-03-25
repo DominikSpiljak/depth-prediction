@@ -29,21 +29,29 @@ class DepthEstimationDataset(Dataset):
         return len(self.indices)
 
     def __getitem__(self, idx):
-        rgb_image, depth_map = self.loader[self.indices[idx]]
+        rgb_path, depth_path, rgb_image, depth_map = self.loader[self.indices[idx]]
         rgb_image = self.base_transformation(rgb_image.copy())
         depth_map = self.base_transformation(depth_map.copy())
 
         if self.augmentations:
             rgb_image, depth_map = self.augmentations(rgb_image, depth_map)
 
-        return self.indices[idx], self.rgb_normalization(rgb_image), depth_map
+        return (
+            self.indices[idx],
+            rgb_path,
+            depth_path,
+            self.rgb_normalization(rgb_image),
+            depth_map,
+        )
 
 
 def collate_fn(batch):
     indices = [sample[0] for sample in batch]
-    rgb_images = torch.stack([sample[1] for sample in batch])
-    depth_maps = torch.stack([sample[2] for sample in batch])
-    return indices, rgb_images, depth_maps
+    rgb_paths = [sample[1] for sample in batch]
+    depth_paths = [sample[2] for sample in batch]
+    rgb_images = torch.stack([sample[3] for sample in batch])
+    depth_maps = torch.stack([sample[4] for sample in batch])
+    return indices, rgb_paths, depth_paths, rgb_images, depth_maps
 
 
 class DepthEstimationDataModule(pl.LightningDataModule):

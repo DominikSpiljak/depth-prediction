@@ -113,7 +113,7 @@ class DepthMIMOUnetModule(pl.LightningModule):
             logger_.compute(epoch, logger)
 
     def forward(self, batch, *args, **kwargs):
-        indices, rgb_im, depth_map = batch
+        indices, rgb_path, depth_path, rgb_im, depth_map = batch
 
         prediction, prediction_2, prediction_4 = self.model(rgb_im)
 
@@ -132,6 +132,8 @@ class DepthMIMOUnetModule(pl.LightningModule):
 
         return (
             indices,
+            rgb_path,
+            depth_path,
             rgb_im.cpu(),
             prediction.detach().cpu(),
             depth_map.cpu(),
@@ -139,7 +141,19 @@ class DepthMIMOUnetModule(pl.LightningModule):
         )
 
     def training_step(self, batch, *args, **kwargs):
-        indices, rgb_im, prediction, depth_map, loss = self.forward(batch)
+        (
+            indices,
+            rgb_path,
+            depth_path,
+            rgb_im,
+            prediction,
+            depth_map,
+            loss,
+        ) = self.forward(batch)
+
+        # Prevent data leaks
+        assert all("/train/" in path for path in rgb_path)
+        assert all("/train/" in path for path in depth_path)
 
         return {
             "indices": indices,
@@ -150,7 +164,19 @@ class DepthMIMOUnetModule(pl.LightningModule):
         }
 
     def validation_step(self, batch, *args, **kwargs):
-        indices, rgb_im, prediction, depth_map, loss = self.forward(batch)
+        (
+            indices,
+            rgb_path,
+            depth_path,
+            rgb_im,
+            prediction,
+            depth_map,
+            loss,
+        ) = self.forward(batch)
+
+        # Prevent data leaks
+        assert all("/val/" in path for path in rgb_path)
+        assert all("/val/" in path for path in depth_path)
 
         return {
             "indices": indices,
@@ -161,7 +187,19 @@ class DepthMIMOUnetModule(pl.LightningModule):
         }
 
     def test_step(self, batch, *args, **kwargs):
-        indices, rgb_im, prediction, depth_map, loss = self.forward(batch)
+        (
+            indices,
+            rgb_path,
+            depth_path,
+            rgb_im,
+            prediction,
+            depth_map,
+            loss,
+        ) = self.forward(batch)
+
+        # Prevent data leaks
+        assert all("/test/" in path for path in rgb_path)
+        assert all("/test/" in path for path in depth_path)
 
         return {
             "indices": indices,

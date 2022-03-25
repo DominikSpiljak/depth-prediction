@@ -47,15 +47,19 @@ class DataCityScapesLoader:
             disparity_image[disparity_image > 0] - 1
         ) / 256
 
-        return rgb_image, disparity_image[..., np.newaxis]
+        return (
+            self.rgb_paths[key],
+            self.depth_paths[key],
+            rgb_image,
+            disparity_image[..., np.newaxis],
+        )
 
     def __len__(self):
         return len(self.rgb_paths)
 
 
 if __name__ == "__main__":
-    loader = DataCityScapesLoader("/home/aromaticconfusion/datasets/Cityscapes/", "val")
-    rgb_im, depth_im = loader[1]
-    print(rgb_im.shape, depth_im.shape)
-    print(rgb_im.max(), rgb_im.min())
-    print(depth_im.max(), depth_im.min())
+    loader = DataCityScapesLoader(
+        "/home/aromaticconfusion/datasets/Cityscapes/", "test"
+    )
+    print(len(loader))

@@ -29,6 +29,8 @@ class DepthMIMOUnetModule(pl.LightningModule):
 
         if not isinstance(model_args, Namespace):
             model_args = Namespace(**model_args)
+            del model_args.training_args
+            del model_args.logging_args
 
         self.model_args = model_args
         self.save_hyperparameters(self.model_args)
@@ -248,3 +250,23 @@ class DepthMIMOUnetModule(pl.LightningModule):
             "lr_scheduler": scheduler,
             "monitor": "Validation/loss",
         }
+
+    @classmethod
+    def load_model_from_ckpt(cls, checkpoint_path):
+        """
+        Function from loading just the model
+        from checkpoint saved by Pytorch Lightning.
+        This is the function that should be
+        used for loading checkpoints for newer models.
+        :param checkpoint_path:
+        :return:
+        """
+        model = cls.load_from_checkpoint(
+            checkpoint_path,
+            training_args={},
+            logging_args=Namespace(
+                disable_image_logging=True, disable_metric_collection=True
+            ),
+        )
+
+        return model.model

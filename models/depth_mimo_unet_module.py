@@ -154,8 +154,8 @@ class DepthMIMOUnetModule(pl.LightningModule):
         ) = self.forward(batch)
 
         # Prevent data leaks
-        assert all("/train/" in path for path in rgb_path)
-        assert all("/train/" in path for path in depth_path)
+        assert all("/nyu2_train/" in path for path in rgb_path)
+        assert all("/nyu2_train/" in path for path in depth_path)
 
         return {
             "indices": indices,
@@ -177,8 +177,8 @@ class DepthMIMOUnetModule(pl.LightningModule):
         ) = self.forward(batch)
 
         # Prevent data leaks
-        assert all("/val/" in path for path in rgb_path)
-        assert all("/val/" in path for path in depth_path)
+        assert all("/nyu2_test/" in path for path in rgb_path)
+        assert all("/nyu2_test/" in path for path in depth_path)
 
         return {
             "indices": indices,
@@ -200,8 +200,8 @@ class DepthMIMOUnetModule(pl.LightningModule):
         ) = self.forward(batch)
 
         # Prevent data leaks
-        assert all("/test/" in path for path in rgb_path)
-        assert all("/test/" in path for path in depth_path)
+        assert all("/nyu2_test/" in path for path in rgb_path)
+        assert all("/nyu2_test/" in path for path in depth_path)
 
         return {
             "indices": indices,

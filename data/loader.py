@@ -1,23 +1,49 @@
 from pathlib import Path
-import json
-import h5py
+import csv
+from PIL import Image
 import numpy as np
 import cv2 as cv
 
 
 class DataNYUDepthLoader:
-    def __init__(self, filepath):
-        self.file_handle = h5py.File(filepath)
+    def __init__(self, filepath, split, max_depth=1000.0):
+        self.rgb_paths = []
+        self.depth_paths = []
+        self.max_depth = max_depth
+
+        if split == "val":
+            split = "test"
+
+        with (Path(filepath) / "data" / f"nyu2_{split}.csv").open() as inp:
+            reader = csv.reader(inp)
+            for line in reader:
+                rgb_path, depth_path = line
+                self.rgb_paths.append(str(Path(filepath) / Path(rgb_path)))
+                self.depth_paths.append(str(Path(filepath) / Path(depth_path)))
 
     def __getitem__(self, key):
-        rgb_image = np.rot90(
-            np.moveaxis(np.array(self.file_handle.get("images")[key]), 0, -1), k=3
+        rgb_image = (
+            np.asarray(Image.open(self.rgb_paths[key])).reshape(  # type:ignore
+                (480, 640, 3)
+            )
+            / 255
+        ).astype(np.float32)
+        depth_map = (
+            np.asarray(Image.open(self.depth_paths[key])).reshape(  # type:ignore
+                (480, 640, 1)
+            )
+            / 1000
+        ).astype(np.float32)
+
+        return (
+            self.rgb_paths[key],
+            self.depth_paths[key],
+            rgb_image,
+            depth_map,
         )
-        depth_map = np.rot90(np.array(self.file_handle.get("depths")[key]), k=3)
-        return rgb_image, depth_map[..., np.newaxis]
 
     def __len__(self):
-        return len(self.file_handle.get("images"))
+        return len(self.rgb_paths)
 
 
 class DataCityScapesLoader:
@@ -60,7 +86,8 @@ class DataCityScapesLoader:
 
 
 if __name__ == "__main__":
-    loader = DataCityScapesLoader(
-        "/home/aromaticconfusion/datasets/Cityscapes/", "test"
-    )
-    print(len(loader))
+    loader = DataNYUDepthLoader("/home/aromaticconfusion/datasets/NYU-depth/", "test")
+
+    for i in range(100):
+        print(loader[i][2].shape)
+        print(loader[i][3].shape, loader[i][3].min(), loader[i][3].max())

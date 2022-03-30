@@ -22,7 +22,7 @@ def parse_args():
 
     data.add_argument(
         "--dataset",
-        help="Path to .mat dataset file",
+        help="Path to dataset files",
         type=Path,
         default=Path.home() / "datasets/NYU-depth",
     )
@@ -95,12 +95,6 @@ def parse_args():
         help="Percentage of data to be used as validation dataset",
         type=float,
         default=0.1,
-    )
-    training.add_argument(
-        "--test-ratio",
-        help="Percentage of data to be used as test dataset",
-        type=float,
-        default=0.2,
     )
     training.add_argument(
         "--learning-rate", help="Learning rate of the model", type=float, default=1e-4

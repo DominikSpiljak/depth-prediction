@@ -1,5 +1,6 @@
 import pytorch_lightning as pl
 import torch
+import numpy as np
 from torch.utils.data import DataLoader, Dataset, random_split
 from torchvision import transforms
 
@@ -68,7 +69,6 @@ class DepthEstimationDataModule(pl.LightningDataModule):
         self.augmentations = get_augmentations(data_args)
 
         self.val_ratio = training_args.val_ratio
-        self.test_ratio = training_args.test_ratio
 
     def setup(self, stage):
         if self.data_path.name == "NYU-depth":
@@ -78,42 +78,19 @@ class DepthEstimationDataModule(pl.LightningDataModule):
             self.__setup_cityscapes_depth(stage)
 
     def __setup_nyu_depth(self, stage):
-        loader = DataNYUDepthLoader(self.data_path)
-
-        num_samples = len(loader)
-        num_val_samples = int(num_samples * self.val_ratio)
-        num_test_samples = int(num_samples * self.test_ratio)
-
-        num_train_samples_ = num_samples - num_val_samples
-        train_indices_, val_indices = random_split(
-            torch.arange(num_samples),
-            [num_train_samples_, num_val_samples],
-            generator=torch.Generator().manual_seed(42),
-        )
-
-        num_train_samples = num_train_samples_ - num_test_samples
-        train_indices, test_indices = random_split(
-            train_indices_,
-            [num_train_samples, num_test_samples],
-            generator=torch.Generator().manual_seed(42),
-        )
-
         self.train_dataset = DepthEstimationDataset(
-            loader=loader,
-            indices=train_indices,
+            loader=DataNYUDepthLoader(self.data_path, "train"),
             base_transformation=transforms.Compose(self.base_transformation),
             rgb_normalization=self.rgb_normalization,
             augmentations=self.augmentations,
         )
         self.val_dataset = DepthEstimationDataset(
-            loader=loader,
-            indices=val_indices,
+            loader=DataNYUDepthLoader(self.data_path, "val"),
             base_transformation=transforms.Compose(self.base_transformation),
             rgb_normalization=self.rgb_normalization,
         )
         self.test_dataset = DepthEstimationDataset(
-            loader=loader,
-            indices=test_indices,
+            loader=DataNYUDepthLoader(self.data_path, "test"),
             base_transformation=transforms.Compose(self.base_transformation),
             rgb_normalization=self.rgb_normalization,
         )

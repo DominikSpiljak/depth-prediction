@@ -315,12 +315,9 @@ class MIMOUnet(nn.Module):
         out_scale1 = self.out_conv_scale1(db1_out)
 
         return (
-            (torch.tanh(out_scale1) + 1 / 2) * (self.max_depth - self.min_depth)
-            + self.min_depth,
-            (torch.tanh(out_scale2) + 1 / 2) * (self.max_depth - self.min_depth)
-            + self.min_depth,
-            (torch.tanh(out_scale3) + 1 / 2) * (self.max_depth - self.min_depth)
-            + self.min_depth,
+            torch.sigmoid(out_scale1),
+            torch.sigmoid(out_scale2),
+            torch.sigmoid(out_scale3),
         )
 
 

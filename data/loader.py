@@ -1,5 +1,6 @@
 from pathlib import Path
 import csv
+from tqdm import tqdm
 from PIL import Image
 import numpy as np
 import cv2 as cv
@@ -14,6 +15,8 @@ class DataNYUDepthLoader:
         if split == "val":
             split = "test"
 
+        self.split = split
+
         with (Path(filepath) / "data" / f"nyu2_{split}.csv").open() as inp:
             reader = csv.reader(inp)
             for line in reader:
@@ -23,17 +26,21 @@ class DataNYUDepthLoader:
 
     def __getitem__(self, key):
         rgb_image = (
-            np.asarray(Image.open(self.rgb_paths[key])).reshape(  # type:ignore
-                (480, 640, 3)
-            )
+            np.asarray(Image.open(self.rgb_paths[key]))  # type:ignore
+            .reshape((480, 640, 3))
             / 255
         ).astype(np.float32)
         depth_map = (
-            np.asarray(Image.open(self.depth_paths[key])).reshape(  # type:ignore
-                (480, 640, 1)
-            )
-            / 1000
+            np.asarray(Image.open(self.depth_paths[key]))  # type:ignore
+            .reshape((480, 640, 1))
         ).astype(np.float32)
+
+        if self.split == "train":
+            depth_map = depth_map / 255
+        else:
+            depth_map = depth_map / 1000 / 10
+        rgb_image = rgb_image[16: 480 - 16, 16:640 - 16, :]
+        depth_map = depth_map[16: 480 - 16, 16:640 - 16, :]
 
         return (
             self.rgb_paths[key],
@@ -86,8 +93,9 @@ class DataCityScapesLoader:
 
 
 if __name__ == "__main__":
-    loader = DataNYUDepthLoader("/home/aromaticconfusion/datasets/NYU-depth/", "test")
-
-    for i in range(100):
-        print(loader[i][2].shape)
-        print(loader[i][3].shape, loader[i][3].min(), loader[i][3].max())
+    loader = DataNYUDepthLoader("/home/aromaticconfusion/datasets/NYU-depth/", "val")
+    max = 0
+    for i in tqdm(range(len(loader))):
+        if loader[i][3].max() > max:
+            max = loader[i][3].max()
+    print(max)

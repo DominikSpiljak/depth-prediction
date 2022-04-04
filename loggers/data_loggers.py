@@ -29,3 +29,25 @@ class ImageLogger:
             f"{self.prefix}/epoch={epoch}", np.moveaxis(images, -1, 0)
         )
         self.current_log = []
+
+
+class SamplesLogger:
+    def __init__(self, prefix):
+        self.samples_rgb = []
+        self.samples_depth = []
+        self.prefix = prefix
+
+    def __call__(self, outputs):
+        self.samples_rgb.extend(outputs["rgb_paths"])
+        self.samples_depth.extend(outputs["depth_paths"])
+
+    def compute(self, epoch, logger):
+
+        logger.experiment.add_text(
+            f"{self.prefix}/epoch={epoch}/samples_rgb", "\n".join(self.samples_rgb)
+        )
+        logger.experiment.add_text(
+            f"{self.prefix}/epoch={epoch}/samples_depth", "\n".join(self.samples_depth)
+        )
+        self.samples_rgb = []
+        self.samples_depth = []

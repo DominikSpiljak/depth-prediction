@@ -130,6 +130,11 @@ def parse_args():
         action="store_true",
     )
     logging.add_argument(
+        "--disable-sample-path-logging",
+        help="Wether to disable sample path logging",
+        action="store_true",
+    )
+    logging.add_argument(
         "--disable-metric-collection",
         help="Wether to metric logging",
         action="store_true",

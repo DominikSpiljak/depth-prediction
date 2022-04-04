@@ -4,7 +4,7 @@ import pytorch_lightning as pl
 import torch
 import torch.nn.functional as F
 
-from loggers.data_loggers import ImageLogger
+from loggers.data_loggers import ImageLogger, SamplesLogger
 from loggers.metric_loggers import (
     DeltaError,
     Log10Error,
@@ -68,6 +68,22 @@ class DepthMIMOUnetModule(pl.LightningModule):
                 )
             )
 
+        if not self.logging_args.disable_sample_path_logging:
+            self.train_loggers.append(
+                SamplesLogger(
+                    "Train",
+                )
+            )
+            self.validation_loggers.append(
+                SamplesLogger(
+                    "Validation",
+                )
+            )
+            self.test_loggers.append(
+                SamplesLogger(
+                    "Test",
+                )
+            )
         if not self.logging_args.disable_metric_collection:
             self.train_loggers.extend(
                 [
@@ -161,8 +177,10 @@ class DepthMIMOUnetModule(pl.LightningModule):
             "indices": indices,
             "loss": loss,
             "rgb_im": rgb_im,
+            "rgb_paths": rgb_path,
             "predictions": prediction,
             "depth_maps": depth_map,
+            "depth_paths": depth_path,
         }
 
     def validation_step(self, batch, *args, **kwargs):
@@ -184,8 +202,10 @@ class DepthMIMOUnetModule(pl.LightningModule):
             "indices": indices,
             "loss": loss,
             "rgb_im": rgb_im,
+            "rgb_paths": rgb_path,
             "predictions": prediction,
             "depth_maps": depth_map,
+            "depth_paths": depth_path,
         }
 
     def test_step(self, batch, *args, **kwargs):
@@ -207,8 +227,10 @@ class DepthMIMOUnetModule(pl.LightningModule):
             "indices": indices,
             "loss": loss,
             "rgb_im": rgb_im,
+            "rgb_paths": rgb_path,
             "predictions": prediction,
             "depth_maps": depth_map,
+            "depth_paths": depth_path,
         }
 
     def training_step_end(self, outputs):

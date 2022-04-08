@@ -8,7 +8,7 @@ class Augmentation:
     def __init__(self, p):
         self.p = p
 
-    def augmentation_function(self, input_tensor):
+    def augmentation_function(self, image, gt):
         raise NotImplementedError("Augmentation function is not defined")
 
     def __call__(self, image, gt):

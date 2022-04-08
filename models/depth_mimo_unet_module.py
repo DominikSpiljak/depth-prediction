@@ -37,6 +37,7 @@ class DepthMIMOUnetModule(pl.LightningModule):
 
         self.training_args = training_args
         self.logging_args = logging_args
+        self.learning_rate = self.training_args.learning_rate
         self.model = MIMOUnet(
             **{k: v for k, v in vars(self.model_args).items() if v is not None}
         )
@@ -261,11 +262,9 @@ class DepthMIMOUnetModule(pl.LightningModule):
         self.compute_loggers(self.test_loggers, self.current_epoch, self.logger)
 
     def configure_optimizers(self):
-        optimizer = torch.optim.Adam(
-            self.model.parameters(), lr=self.training_args.learning_rate
-        )
+        optimizer = torch.optim.Adam(self.model.parameters(), lr=self.learning_rate)
         scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
-            optimizer, mode="min", factor=0.9, patience=3, min_lr=1e-5
+            optimizer, mode="min", factor=0.5, patience=1, min_lr=1e-7
         )
         return {
             "optimizer": optimizer,

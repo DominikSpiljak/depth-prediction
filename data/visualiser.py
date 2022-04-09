@@ -13,8 +13,11 @@ def visualise_depth(*, depth_map, rgb_im=None, prediction=None, normalized=True)
         shifted_map = np.zeros_like(depth_map)
     else:
         shifted_map = (depth_map - min_val) / (max_val - min_val)
+
+    # Invert color map
+    shifted_map = shifted_map * -1 + 1
     depth_color_map = cv.applyColorMap(
-        (shifted_map * 255).astype(np.uint8), cv.COLORMAP_JET
+        (shifted_map * 255).astype(np.uint8), cv.COLORMAP_MAGMA
     )
     if rgb_im is None:
         return depth_color_map

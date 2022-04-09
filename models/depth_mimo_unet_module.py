@@ -14,7 +14,7 @@ from loggers.metric_loggers import (
     RootMeanSquaredError,
 )
 from models.depth_mimo_unet_model.depth_mimo_unet import MIMOUnet
-from models.depth_mimo_unet_model.losses import Criterion
+from models.losses import Criterion
 
 
 class DepthMIMOUnetModule(pl.LightningModule):
@@ -37,7 +37,7 @@ class DepthMIMOUnetModule(pl.LightningModule):
 
         self.training_args = training_args
         self.logging_args = logging_args
-        self.learning_rate = self.training_args.learning_rate
+        # self.learning_rate = self.training_args.learning_rate
         self.model = MIMOUnet(
             **{k: v for k, v in vars(self.model_args).items() if v is not None}
         )
@@ -46,7 +46,7 @@ class DepthMIMOUnetModule(pl.LightningModule):
         self.validation_loggers = []
         self.test_loggers = []
 
-        self.setup_loggers()
+        # self.setup_loggers()
 
     def setup_loggers(self):
         if not self.logging_args.disable_image_logging:

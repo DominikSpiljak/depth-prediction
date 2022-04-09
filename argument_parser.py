@@ -1,5 +1,10 @@
 from argparse import ArgumentParser, Namespace
 from pathlib import Path
+from models.depth_mimo_unet_model import depth_mimounet_arguments
+from models.dpt_model import dpt_arguments
+from models.laddernet_model import laddernet_arguments
+
+model_names = ["MIMOUnet", "LadderNet", "DPT"]
 
 
 class DotDict(dict):
@@ -17,8 +22,11 @@ def parse_args():
 
     data = parser.add_argument_group("data")
     training = parser.add_argument_group("training")
-    model = parser.add_argument_group("model")
     logging = parser.add_argument_group("logging")
+
+    parser = depth_mimounet_arguments.add_model_args(parser)
+    parser = laddernet_arguments.add_model_args(parser)
+    parser = dpt_arguments.add_model_args(parser)
 
     data.add_argument(
         "--dataset",
@@ -69,25 +77,11 @@ def parse_args():
         action="store_true",
     )
 
-    model.add_argument(
-        "--min-depth",
-        help="Minimum that a depth can be in ground truth maps",
-        default=0,
-        type=float,
-    )
-
-    model.add_argument(
-        "--max-depth",
-        help="Maximum that a depth can be in ground truth maps",
-        default=10,
-        type=float,
-    )
-
-    model.add_argument(
-        "--num-res-blocks",
-        help="Number of ResNet blocks inside MIMOUnet block",
-        default=8,
-        type=int,
+    training.add_argument(
+        "--model",
+        help="Which model to use",
+        choices=model_names,
+        default=model_names[0],
     )
 
     training.add_argument(
@@ -147,6 +141,9 @@ def parse_args():
 
     for group in parser._action_groups:
         group_dict = {a.dest: getattr(args, a.dest, None) for a in group._group_actions}
-        arg_groups[group.title] = Namespace(**group_dict)
-
+        if group.title in model_names:
+            if group.title == args.model:
+                arg_groups["model"] = Namespace(**group_dict)
+        else:
+            arg_groups[group.title] = Namespace(**group_dict)
     return arg_groups

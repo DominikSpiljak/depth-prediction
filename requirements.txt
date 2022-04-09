@@ -4,3 +4,4 @@ numpy
 pytorch-lightning
 h5py
 torchvision
+open3d

@@ -1,6 +1,5 @@
 from pathlib import Path
 import csv
-from tqdm import tqdm
 from PIL import Image
 import numpy as np
 import cv2 as cv
@@ -26,21 +25,21 @@ class DataNYUDepthLoader:
 
     def __getitem__(self, key):
         rgb_image = (
-            np.asarray(Image.open(self.rgb_paths[key]))  # type:ignore
-            .reshape((480, 640, 3))
-            / 255
+            np.asarray(Image.open(self.rgb_paths[key])).reshape((480, 640, 3))
+            / 255  # type:ignore
         ).astype(np.float32)
         depth_map = (
-            np.asarray(Image.open(self.depth_paths[key]))  # type:ignore
-            .reshape((480, 640, 1))
+            np.asarray(Image.open(self.depth_paths[key])).reshape(  # type:ignore
+                (480, 640, 1)
+            )
         ).astype(np.float32)
 
         if self.split == "train":
             depth_map = depth_map / 255
         else:
             depth_map = depth_map / 1000 / 10
-        rgb_image = rgb_image[16: 480 - 16, 16:640 - 16, :]
-        depth_map = depth_map[16: 480 - 16, 16:640 - 16, :]
+        rgb_image = rgb_image[16 : 480 - 16, 16 : 640 - 16, :]
+        depth_map = depth_map[16 : 480 - 16, 16 : 640 - 16, :]
 
         return (
             self.rgb_paths[key],
@@ -51,6 +50,29 @@ class DataNYUDepthLoader:
 
     def __len__(self):
         return len(self.rgb_paths)
+
+
+class DataNYUDepthLoaderEigen:
+    def __init__(self, filepath):
+        self.eigen_root = Path(filepath) / "eigen_nyu_test"
+        crop = np.load(str(self.eigen_root / "eigen_test_crop.npy"))
+
+        rgb_images = np.load(str(self.eigen_root / "eigen_test_rgb.npy"))
+        self.rgb_images = rgb_images[:, crop[0] : crop[1], crop[2] : crop[3], :]
+
+        depth_images = np.load(str(self.eigen_root / "eigen_test_depth.npy"))
+        self.depth_images = depth_images[:, crop[0] : crop[1], crop[2] : crop[3]]
+
+    def __getitem__(self, key):
+        return (
+            str(self.eigen_root / "eigen_test_rgb.npy"),
+            str(self.eigen_root / "eigen_test_depth.npy"),
+            self.rgb_images[key],
+            self.depth_images[key, ..., np.newaxis] / 10,
+        )
+
+    def __len__(self):
+        return len(self.rgb_images)
 
 
 class DataCityScapesLoader:
@@ -93,9 +115,7 @@ class DataCityScapesLoader:
 
 
 if __name__ == "__main__":
-    loader = DataNYUDepthLoader("/home/aromaticconfusion/datasets/NYU-depth/", "val")
-    max = 0
-    for i in tqdm(range(len(loader))):
-        if loader[i][3].max() > max:
-            max = loader[i][3].max()
-    print(max)
+    loader = DataNYUDepthLoaderEigen("/home/aromaticconfusion/datasets/NYU-depth/")
+
+    for i in range(len(loader)):
+        print(loader[i][3].shape)

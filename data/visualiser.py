@@ -14,7 +14,7 @@ def visualise_depth(*, depth_map, rgb_im=None, prediction=None, normalized=True)
     else:
         shifted_map = (depth_map - min_val) / (max_val - min_val)
 
-    # Invert color map
+    # Invert color map because it is more intuitive
     shifted_map = shifted_map * -1 + 1
     depth_color_map = cv.applyColorMap(
         (shifted_map * 255).astype(np.uint8), cv.COLORMAP_MAGMA
@@ -27,4 +27,12 @@ def visualise_depth(*, depth_map, rgb_im=None, prediction=None, normalized=True)
 
     rgb_im = (rgb_im * 255).astype(np.uint8)
 
-    return np.hstack((rgb_im, depth_color_map))
+    return np.hstack(
+        (
+            rgb_im,
+            cv.cvtColor(
+                depth_color_map,
+                cv.COLOR_BGR2RGB,
+            ),
+        )
+    )

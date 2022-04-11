@@ -1,11 +1,14 @@
 import pytorch_lightning as pl
 import torch
-import numpy as np
-from torch.utils.data import DataLoader, Dataset, random_split
+from torch.utils.data import DataLoader, Dataset
 from torchvision import transforms
 
 from data.augmentations import get_augmentations
-from data.loader import DataNYUDepthLoader, DataCityScapesLoader
+from data.loader import (
+    DataNYUDepthLoader,
+    DataNYUDepthLoaderEigen,
+    DataCityScapesLoader,
+)
 
 
 class DepthEstimationDataset(Dataset):
@@ -90,7 +93,7 @@ class DepthEstimationDataModule(pl.LightningDataModule):
             rgb_normalization=self.rgb_normalization,
         )
         self.test_dataset = DepthEstimationDataset(
-            loader=DataNYUDepthLoader(self.data_path, "test"),
+            loader=DataNYUDepthLoaderEigen(self.data_path),
             base_transformation=transforms.Compose(self.base_transformation),
             rgb_normalization=self.rgb_normalization,
         )

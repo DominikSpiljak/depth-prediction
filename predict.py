@@ -1,7 +1,7 @@
 from argument_parser import ArgumentParser
 
 from data.visualiser import visualise_depth
-import cv2 as cv
+from PIL import Image
 import numpy as np
 import open3d as o3d
 from torchvision import transforms
@@ -29,7 +29,6 @@ def parse_args():
 def rgbd_to_pointcloud(rgb_image, depth_map):
     rgb_image = np.clip(rgb_image, 0, 1)
     rgb_image = (rgb_image * 255).astype(np.uint8).copy()
-    rgb_image = cv.cvtColor(rgb_image, cv.COLOR_RGB2BGR)
 
     rgbd = o3d.geometry.RGBDImage.create_from_color_and_depth(
         color=o3d.geometry.Image(rgb_image),
@@ -67,7 +66,7 @@ def main():
         args.checkpoint,
     )
 
-    image = preprocess(cv.imread(args.image)).unsqueeze(0)
+    image = preprocess(Image.open(args.image)).unsqueeze(0)
     depth, *_ = model(image)
     if args._3d:
         rgbd_to_pointcloud(
@@ -79,8 +78,8 @@ def main():
             depth_map=np.moveaxis(depth[0].detach().numpy(), 0, -1),
             rgb_im=np.moveaxis(image[0].detach().numpy(), 0, -1),
         )
-        cv.imshow("Depth map", visualised)
-        cv.waitKey()
+        vis = Image.fromarray(np.uint8(visualised)).convert("RGB")
+        vis.show()
 
 
 if __name__ == "__main__":

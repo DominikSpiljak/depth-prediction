@@ -37,7 +37,7 @@ class DepthMIMOUnetModule(pl.LightningModule):
 
         self.training_args = training_args
         self.logging_args = logging_args
-        # self.learning_rate = self.training_args.learning_rate
+        self.learning_rate = self.training_args.learning_rate
         self.model = MIMOUnet(
             **{k: v for k, v in vars(self.model_args).items() if v is not None}
         )
@@ -46,7 +46,7 @@ class DepthMIMOUnetModule(pl.LightningModule):
         self.validation_loggers = []
         self.test_loggers = []
 
-        # self.setup_loggers()
+        self.setup_loggers()
 
     def setup_loggers(self):
         if not self.logging_args.disable_image_logging:
@@ -221,8 +221,8 @@ class DepthMIMOUnetModule(pl.LightningModule):
         ) = self.forward(batch)
 
         # Prevent data leaks
-        assert all("/nyu2_test/" in path for path in rgb_path)
-        assert all("/nyu2_test/" in path for path in depth_path)
+        assert all("/eigen_nyu_test/" in path for path in rgb_path)
+        assert all("/eigen_nyu_test/" in path for path in depth_path)
 
         return {
             "indices": indices,
@@ -274,19 +274,13 @@ class DepthMIMOUnetModule(pl.LightningModule):
 
     @classmethod
     def load_model_from_ckpt(cls, checkpoint_path):
-        """
-        Function from loading just the model
-        from checkpoint saved by Pytorch Lightning.
-        This is the function that should be
-        used for loading checkpoints for newer models.
-        :param checkpoint_path:
-        :return:
-        """
         model = cls.load_from_checkpoint(
             checkpoint_path,
-            training_args={},
+            training_args=Namespace(learning_rate=None),
             logging_args=Namespace(
-                disable_image_logging=True, disable_metric_collection=True
+                disable_image_logging=True,
+                disable_metric_collection=True,
+                disable_sample_path_logging=True,
             ),
         )
 

@@ -6,10 +6,9 @@ import cv2 as cv
 
 
 class DataNYUDepthLoader:
-    def __init__(self, filepath, split, max_depth=1000.0):
+    def __init__(self, filepath, split):
         self.rgb_paths = []
         self.depth_paths = []
-        self.max_depth = max_depth
 
         if split == "val":
             split = "test"

@@ -60,6 +60,7 @@ def collate_fn(batch):
 
 class DepthEstimationDataModule(pl.LightningDataModule):
     def __init__(self, *, data_args, training_args):
+        super().__init__()
         self.data_path = data_args.dataset
         self.batch_size = training_args.batch_size
         self.num_workers = training_args.num_workers

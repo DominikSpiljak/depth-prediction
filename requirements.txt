@@ -1,7 +1,7 @@
 torch~=1.11.0
 opencv-python~=4.5.5.64
 numpy~=1.22.3
-pytorch-lightning==1.5.10
+pytorch-lightning==1.6.0
 h5py
 torchvision~=0.12.0
 open3d~=0.15.2

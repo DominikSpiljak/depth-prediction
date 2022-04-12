@@ -91,7 +91,7 @@ def parse_args():
         default=0.1,
     )
     training.add_argument(
-        "--learning-rate", help="Learning rate of the model", type=float, default=1e-4
+        "--learning-rate", help="Learning rate of the model", type=float, default=3e-5
     )
     training.add_argument(
         "--batch-size", help="Batch size for training", type=int, default=2

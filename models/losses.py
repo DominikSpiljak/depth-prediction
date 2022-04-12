@@ -8,9 +8,9 @@ class SILogLoss(nn.Module):
 
     def forward(self, predicted, target):
 
-        # mask = torch.logical_and(predicted > 1e-3, target > 1e-3)
+        mask = predicted > 1e-3
 
-        g = torch.log(predicted) - torch.log(target)
+        g = torch.log(predicted[mask]) - torch.log(target[mask])
 
         Dg = torch.var(g) + 0.15 * torch.pow(torch.mean(g), 2)
         return 10 * torch.sqrt(Dg)

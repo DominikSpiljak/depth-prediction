@@ -315,9 +315,9 @@ class MIMOUnet(nn.Module):
         out_scale1 = self.out_conv_scale1(db1_out)
 
         return (
-            torch.sigmoid(out_scale1),
-            torch.sigmoid(out_scale2),
-            torch.sigmoid(out_scale3),
+            out_scale1,
+            out_scale2,
+            out_scale3,
         )
 
 

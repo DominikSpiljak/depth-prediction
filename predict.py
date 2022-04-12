@@ -6,10 +6,25 @@ import numpy as np
 import open3d as o3d
 from torchvision import transforms
 from models.depth_mimo_unet_module import DepthMIMOUnetModule
+from models.laddernet_module import LadderNetModule
+
+module_mapping = {
+    "MIMOUnet": DepthMIMOUnetModule,
+    "LadderNet": LadderNetModule,
+    "DPT": None,
+}
+
+model_names = ["MIMOUnet", "LadderNet", "DPT"]
 
 
 def parse_args():
     parser = ArgumentParser()
+    parser.add_argument(
+        "--model",
+        help="Which model to use",
+        choices=model_names,
+        default=model_names[0],
+    )
     parser.add_argument("--checkpoint", help="Path to checkpoint")
     parser.add_argument("--image", help="Path to image for predicting")
     parser.add_argument(
@@ -62,7 +77,7 @@ def main():
         ]
     )
 
-    model = DepthMIMOUnetModule.load_model_from_ckpt(
+    model = module_mapping[args.model].load_model_from_ckpt(
         args.checkpoint,
     )
 

@@ -123,7 +123,7 @@ class TransitionUpBlock(nn.Module):
 class PartialDenseBlock(nn.Module):
     def __init__(self, dense_layers):
         super().__init__()
-        self.dense_layers = dense_layers
+        self.dense_layers = nn.ModuleList(dense_layers)
 
     def forward(self, x):
         features = [x]

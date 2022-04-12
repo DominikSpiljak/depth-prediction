@@ -4,6 +4,13 @@ from pytorch_lightning.callbacks import LearningRateMonitor, ModelCheckpoint
 from argument_parser import parse_args
 from data.data_module import DepthEstimationDataModule
 from models.depth_mimo_unet_module import DepthMIMOUnetModule
+from models.laddernet_module import LadderNetModule
+
+module_mapping = {
+    "MIMOUnet": DepthMIMOUnetModule,
+    "LadderNet": LadderNetModule,
+    "DPT": None,
+}
 
 
 def main():
@@ -12,14 +19,14 @@ def main():
         data_args=args.data, training_args=args.training
     )
     if args.training.checkpoint:
-        depth_mimounet_module = DepthMIMOUnetModule.load_from_checkpoint(
+        module = module_mapping[args.training.model].load_from_checkpoint(
             args.training.checkpoint,
             training_args=args.training,
             logging_args=args.logging,
             map_location="cpu" if args.training.gpus == 0 else "cuda",
         )
     else:
-        depth_mimounet_module = DepthMIMOUnetModule(
+        module = module_mapping[args.training.model](
             model_args=args.model,
             training_args=args.training,
             logging_args=args.logging,
@@ -39,12 +46,13 @@ def main():
     trainer = pl.Trainer(
         callbacks=metric_monitor_callbacks,
         gpus=args.training.gpus,
+        detect_anomaly=True,
     )
 
     if not args.training.eval_mode:
-        trainer.fit(depth_mimounet_module, data_module)
+        trainer.fit(module, data_module)
 
-    trainer.test(depth_mimounet_module, data_module)
+    trainer.test(module, data_module)
 
 
 if __name__ == "__main__":

@@ -46,10 +46,11 @@ class MIMOUnetCriterion(nn.Module):
 
 
 class LadderNetCriterion(nn.Module):
-    def __init__(self):
+    def __init__(self, aux_weight=0.1):
         super().__init__()
         self.loss = SILogLoss()
         self.aux_loss = nn.L1Loss()
+        self.aux_weight = aux_weight
 
     def forward(self, prediction, target):
 
@@ -68,12 +69,12 @@ class LadderNetCriterion(nn.Module):
             target, scale_factor=1 / 64, recompute_scale_factor=True
         )
 
-        loss = (
-            self.loss(predicted=predicted_1, target=target)
-            + self.aux_loss(input=predicted_8, target=target_8)
+        loss = self.loss(predicted=predicted_1, target=target)
+        aux_loss = (
+            self.aux_loss(input=predicted_8, target=target_8)
             + self.aux_loss(input=predicted_16, target=target_16)
             + self.aux_loss(input=predicted_32, target=target_32)
             + self.aux_loss(input=predicted_64, target=target_64) * 5
-        ) / 9
+        ) / 8
 
-        return loss
+        return loss + self.aux_weight * aux_loss

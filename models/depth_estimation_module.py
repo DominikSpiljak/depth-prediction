@@ -260,8 +260,8 @@ class DepthEstimationModule(pl.LightningModule, abc.ABC):
 
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(self.model.parameters(), lr=self.learning_rate)
-        scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
-            optimizer, mode="min", factor=0.5, patience=1, min_lr=1e-7
+        scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
+            optimizer, T_max=3, eta_min=1e-5
         )
         return {
             "optimizer": optimizer,

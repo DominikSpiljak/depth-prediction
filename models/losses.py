@@ -9,7 +9,7 @@ class SILogLoss(nn.Module):
 
     def forward(self, predicted, target):
 
-        mask = predicted > 1e-3
+        mask = predicted > 0
 
         g = torch.log(predicted[mask]) - torch.log(target[mask])
 
@@ -48,30 +48,32 @@ class MIMOUnetCriterion(nn.Module):
 class LadderNetCriterion(nn.Module):
     def __init__(self):
         super().__init__()
-        self.losses = [SILogLoss()]
-        self.factors = [1]
+        self.loss = SILogLoss()
+        self.aux_loss = nn.L1Loss()
 
     def forward(self, prediction, target):
 
-        predicted_1, predicted_8, predicted_16, *_ = prediction
+        predicted_1, predicted_8, predicted_16, predicted_32, predicted_64 = prediction
 
-        loss_accumulated = 0
         target_8 = F.interpolate(
             target, scale_factor=1 / 8, recompute_scale_factor=True
         )
         target_16 = F.interpolate(
             target, scale_factor=1 / 16, recompute_scale_factor=True
         )
+        target_32 = F.interpolate(
+            target, scale_factor=1 / 32, recompute_scale_factor=True
+        )
+        target_64 = F.interpolate(
+            target, scale_factor=1 / 64, recompute_scale_factor=True
+        )
 
-        for factor, loss in zip(self.factors, self.losses):
-            loss_accumulated += (
-                (
-                    loss(predicted_1, target)
-                    + loss(predicted_8, target_8)
-                    + loss(predicted_16, target_16)
-                )
-                / 3
-                * factor
-            )
+        loss = (
+            self.loss(predicted=predicted_1, target=target)
+            + self.aux_loss(input=predicted_8, target=target_8)
+            + self.aux_loss(input=predicted_16, target=target_16)
+            + self.aux_loss(input=predicted_32, target=target_32)
+            + self.aux_loss(input=predicted_64, target=target_64) * 5
+        ) / 9
 
-        return loss_accumulated
+        return loss

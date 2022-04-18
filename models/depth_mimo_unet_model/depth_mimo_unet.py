@@ -127,18 +127,18 @@ class ShallowConvolutionalModule(nn.Module):
         super().__init__()
         self.conv1 = nn.Conv2d(
             in_channels=in_channels,
-            out_channels=out_channels // 8,
+            out_channels=out_channels // 4,
             kernel_size=3,
             padding="same",
         )
         self.conv2 = nn.Conv2d(
-            in_channels=out_channels // 8,
-            out_channels=out_channels // 4,
+            in_channels=out_channels // 4,
+            out_channels=out_channels // 2,
             kernel_size=1,
             padding="same",
         )
         self.conv3 = nn.Conv2d(
-            in_channels=out_channels // 4,
+            in_channels=out_channels // 2,
             out_channels=out_channels // 2,
             kernel_size=3,
             padding="same",
@@ -177,8 +177,9 @@ class DecoderBlockResidual(nn.Module):
         self.conv1 = nn.Conv2d(
             in_channels=in_channels,
             out_channels=out_channels,
-            kernel_size=3,
+            kernel_size=1,
             padding="same",
+            stride=1,
         )
         self.residual_blocks = ResidualBlocks(
             in_channels=out_channels, num_res_blocks=num_res_blocks
@@ -196,15 +197,15 @@ class DecoderBlockConvResidualUpscale(nn.Module):
         super().__init__()
         self.conv1 = nn.Conv2d(
             in_channels=in_channels,
-            out_channels=out_channels,
-            kernel_size=3,
+            out_channels=out_channels * 2,
+            kernel_size=1,
             padding="same",
         )
         self.residual_blocks = ResidualBlocks(
-            in_channels=out_channels, num_res_blocks=num_res_blocks
+            in_channels=out_channels * 2, num_res_blocks=num_res_blocks
         )
         self.conv2 = nn.ConvTranspose2d(
-            in_channels=out_channels,
+            in_channels=out_channels * 2,
             out_channels=out_channels,
             kernel_size=4,
             stride=2,
@@ -228,7 +229,7 @@ class DecoderBlockResidualUpscale(nn.Module):
         )
         self.conv1 = nn.ConvTranspose2d(
             in_channels=in_channels,
-            out_channels=in_channels,
+            out_channels=in_channels // 2,
             kernel_size=4,
             stride=2,
             padding=1,
@@ -241,12 +242,14 @@ class DecoderBlockResidualUpscale(nn.Module):
         return conv1_out, res_out
 
 
-class MIMOUnet(nn.Module):
-    def __init__(self, min_depth, max_depth, num_res_blocks=8):
-        super().__init__()
+def initialize_weights(m):
+    if isinstance(m, nn.Conv2d):
+        nn.init.zeros_(m.bias.data)
 
-        self.min_depth = min_depth
-        self.max_depth = max_depth
+
+class MIMOUnet(nn.Module):
+    def __init__(self, num_res_blocks=8):
+        super().__init__()
 
         self.scm2 = ShallowConvolutionalModule(in_channels=3, out_channels=64)
         self.scm3 = ShallowConvolutionalModule(in_channels=3, out_channels=128)
@@ -265,10 +268,10 @@ class MIMOUnet(nn.Module):
         self.aff2 = AsymetricFeatureFusion(in_channels=128 + 64 + 32, out_channels=64)
 
         self.db1 = DecoderBlockResidual(
-            in_channels=32 + 64, out_channels=32, num_res_blocks=num_res_blocks
+            in_channels=32 + 32, out_channels=32, num_res_blocks=num_res_blocks
         )
         self.db2 = DecoderBlockConvResidualUpscale(
-            in_channels=64 + 128, out_channels=64, num_res_blocks=num_res_blocks
+            in_channels=64 + 64, out_channels=32, num_res_blocks=num_res_blocks
         )
         self.db3 = DecoderBlockResidualUpscale(
             in_channels=128, num_res_blocks=num_res_blocks
@@ -283,6 +286,7 @@ class MIMOUnet(nn.Module):
         self.out_conv_scale3 = nn.Conv2d(
             in_channels=128, out_channels=1, kernel_size=3, padding="same"
         )
+        self.apply(initialize_weights)
 
     def forward(self, x):
         x_2 = F.interpolate(x, scale_factor=0.5, recompute_scale_factor=True)
@@ -323,11 +327,8 @@ class MIMOUnet(nn.Module):
 
 if __name__ == "__main__":
     device = torch.device("cuda")
-    model = MIMOUnet(min_depth=0, max_depth=1)
+    model = MIMOUnet()
     model.to(device)
-    x = torch.rand(2, 3, 240, 320, device=device) * 2 - 1
-    out = model(x)
-    out = list(out)
-    print(f"Output 0: {out[0].shape}, max={out[0].max()}, min={out[0].min()}")
-    print(f"Output 1: {out[1].shape}, max={out[1].max()}, min={out[1].min()}")
-    print(f"Output 2: {out[2].shape}, max={out[2].max()}, min={out[2].min()}")
+    x = torch.randn(2, 3, 240, 320)
+    x = x.to(device)
+    [print(out.min(), out.max()) for out in model(x)]

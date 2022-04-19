@@ -242,11 +242,6 @@ class DecoderBlockResidualUpscale(nn.Module):
         return conv1_out, res_out
 
 
-def initialize_weights(m):
-    if isinstance(m, nn.Conv2d):
-        nn.init.zeros_(m.bias.data)
-
-
 class MIMOUnet(nn.Module):
     def __init__(self, num_res_blocks=8):
         super().__init__()
@@ -286,7 +281,6 @@ class MIMOUnet(nn.Module):
         self.out_conv_scale3 = nn.Conv2d(
             in_channels=128, out_channels=1, kernel_size=3, padding="same"
         )
-        self.apply(initialize_weights)
 
     def forward(self, x):
         x_2 = F.interpolate(x, scale_factor=0.5, recompute_scale_factor=True)
@@ -319,9 +313,9 @@ class MIMOUnet(nn.Module):
         out_scale1 = self.out_conv_scale1(db1_out)
 
         return (
-            out_scale1,
-            out_scale2,
-            out_scale3,
+            torch.sigmoid(out_scale1),
+            torch.sigmoid(out_scale2),
+            torch.sigmoid(out_scale3),
         )
 
 

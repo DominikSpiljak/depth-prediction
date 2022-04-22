@@ -34,9 +34,9 @@ class DataNYUDepthLoader:
         ).astype(np.float32)
 
         if self.split == "train":
-            depth_map = depth_map / 255
+            depth_map = depth_map / 255 * 10
         else:
-            depth_map = depth_map / 1000 / 10
+            depth_map = depth_map / 1000
         rgb_image = rgb_image[16 : 480 - 16, 16 : 640 - 16, :]
         depth_map = depth_map[16 : 480 - 16, 16 : 640 - 16, :]
 

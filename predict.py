@@ -86,7 +86,7 @@ def main():
     if args._3d:
         rgbd_to_pointcloud(
             np.moveaxis(image[0].detach().numpy(), 0, -1) * 0.5 + 0.5,
-            depth_map=depth[0].squeeze().detach().numpy() * 10,
+            depth_map=depth[0].squeeze().detach().numpy(),
         )
     else:
         visualised = visualise_depth(

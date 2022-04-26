@@ -40,6 +40,11 @@ def parse_args():
         nargs=2,
         default=[240, 320],
     )
+    data.add_argument(
+        "--imagenet-norm",
+        help="Wether to use Imagenet normalization",
+        action="store_true",
+    )
 
     data.add_argument(
         "--aug-gaussian-blur",
@@ -146,4 +151,7 @@ def parse_args():
                 arg_groups["model"] = Namespace(**group_dict)
         else:
             arg_groups[group.title] = Namespace(**group_dict)
+
+    arg_groups.logging.imagenet_norm = arg_groups.data.imagenet_norm
+
     return arg_groups

@@ -68,7 +68,13 @@ class DepthEstimationDataModule(pl.LightningDataModule):
             transforms.ToTensor(),
             transforms.Resize(list(map(int, data_args.image_size))),
         ]
-        self.rgb_normalization = transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
+        if data_args.imagenet_norm:
+            norm = [(0.485, 0.456, 0.406), (0.229, 0.224, 0.225)]
+
+        else:
+            norm = [(0.5, 0.5, 0.5), (0.5, 0.5, 0.5)]
+
+        self.rgb_normalization = transforms.Normalize(*norm)
 
         self.augmentations = get_augmentations(data_args)
 

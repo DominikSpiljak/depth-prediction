@@ -49,7 +49,7 @@ class LadderNetCriterion(nn.Module):
     def __init__(self, aux_weight=0.1):
         super().__init__()
         self.loss = SILogLoss()
-        self.aux_loss = nn.L1Loss()
+        self.aux_loss = SILogLoss()
         self.aux_weight = aux_weight
 
     def forward(self, prediction, target):
@@ -71,10 +71,10 @@ class LadderNetCriterion(nn.Module):
 
         loss = self.loss(predicted=predicted_1, target=target)
         aux_loss = (
-            self.aux_loss(input=predicted_8, target=target_8)
-            + self.aux_loss(input=predicted_16, target=target_16)
-            + self.aux_loss(input=predicted_32, target=target_32)
-            + self.aux_loss(input=predicted_64, target=target_64) * 5
+            self.aux_loss(predicted=predicted_8, target=target_8)
+            + self.aux_loss(predicted=predicted_16, target=target_16)
+            + self.aux_loss(predicted=predicted_32, target=target_32)
+            + self.aux_loss(predicted=predicted_64, target=target_64) * 5
         ) / 8
 
         return loss + self.aux_weight * aux_loss

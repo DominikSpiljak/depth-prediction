@@ -2,7 +2,9 @@ import cv2 as cv
 import numpy as np
 
 
-def visualise_depth(*, depth_map, rgb_im=None, prediction=None, normalized=True):
+def visualise_depth(
+    *, depth_map, rgb_im=None, prediction=None, normalized=True, imagenet_norm=False
+):
 
     if prediction is not None:
         depth_map = np.hstack((prediction, depth_map))
@@ -23,7 +25,12 @@ def visualise_depth(*, depth_map, rgb_im=None, prediction=None, normalized=True)
         return depth_color_map
 
     if normalized:
-        rgb_im = (rgb_im + 1) / 2
+        if imagenet_norm:
+            rgb_im = rgb_im * np.array([0.229, 0.224, 0.225]) + np.array(
+                [0.485, 0.456, 0.406]
+            )
+        else:
+            rgb_im = (rgb_im + 1) / 2
 
     rgb_im = (rgb_im * 255).astype(np.uint8)
 

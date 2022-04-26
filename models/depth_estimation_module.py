@@ -62,18 +62,21 @@ class DepthEstimationModule(pl.LightningModule, abc.ABC):
                 ImageLogger(
                     self.logging_args.max_images_logged_per_epoch,
                     "Train",
+                    self.logging_args.imagenet_norm,
                 )
             )
             self.validation_loggers.append(
                 ImageLogger(
                     self.logging_args.max_images_logged_per_epoch,
                     "Validation",
+                    self.logging_args.imagenet_norm,
                 )
             )
             self.test_loggers.append(
                 ImageLogger(
                     self.logging_args.max_images_logged_per_epoch,
                     "Test",
+                    self.logging_args.imagenet_norm,
                 )
             )
 

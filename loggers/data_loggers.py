@@ -3,9 +3,10 @@ from data.visualiser import visualise_depth
 
 
 class ImageLogger:
-    def __init__(self, max_batches_logged_per_epoch, prefix):
+    def __init__(self, max_batches_logged_per_epoch, prefix, imagenet_norm):
         self.max_batches_logged_per_epoch = max_batches_logged_per_epoch
         self.prefix = prefix
+        self.imagenet_norm = imagenet_norm
         self.current_log = []
 
     def __call__(self, outputs):
@@ -19,7 +20,10 @@ class ImageLogger:
 
             self.current_log.append(
                 visualise_depth(
-                    depth_map=depth_map, rgb_im=rgb_im, prediction=prediction
+                    depth_map=depth_map,
+                    rgb_im=rgb_im,
+                    prediction=prediction,
+                    imagenet_norm=self.imagenet_norm,
                 )
             )
 

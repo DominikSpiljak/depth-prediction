@@ -239,11 +239,16 @@ class LadderNet(nn.Module):
         tu1_out = self.tu1(db1_out, tu2_out)
 
         return (
-            F.interpolate(self.out_map_tu1(tu1_out), scale_factor=4, mode="bilinear"),
-            self.out_map_tu2(tu2_out),
-            self.out_map_tu3a(tu3a_out),
-            self.out_map_tu3b(tu3b_out),
-            self.out_map_spp(spp_out),
+            torch.sigmoid(
+                F.interpolate(
+                    self.out_map_tu1(tu1_out), scale_factor=4, mode="bilinear"
+                )
+            )
+            * 10,
+            torch.sigmoid(self.out_map_tu2(tu2_out)) * 10,
+            torch.sigmoid(self.out_map_tu3a(tu3a_out)) * 10,
+            torch.sigmoid(self.out_map_tu3b(tu3b_out)) * 10,
+            torch.sigmoid(self.out_map_spp(spp_out)) * 10,
         )
 
 

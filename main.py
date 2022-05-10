@@ -46,7 +46,7 @@ def main():
     trainer = pl.Trainer(
         callbacks=metric_monitor_callbacks,
         gpus=args.training.gpus,
-        limit_train_batches=5000,
+        # limit_train_batches=5000,
     )
 
     if not args.training.eval_mode:

@@ -1,10 +1,10 @@
-from argument_parser import ArgumentParser
-
-from data.visualiser import visualise_depth
-from PIL import Image
 import numpy as np
 import open3d as o3d
+from PIL import Image
 from torchvision import transforms
+
+from argument_parser import ArgumentParser
+from data.visualiser import visualise_depth
 from models.depth_mimo_unet_module import DepthMIMOUnetModule
 from models.laddernet_module import LadderNetModule
 
@@ -28,9 +28,14 @@ def parse_args():
     parser.add_argument("--checkpoint", help="Path to checkpoint")
     parser.add_argument("--image", help="Path to image for predicting")
     parser.add_argument(
-        "--image_size",
+        "--image-size",
         help="Image size before entering the model",
         nargs=2,
+    )
+    parser.add_argument(
+        "--imagenet-norm",
+        help="Wether to use imagenet normalization",
+        action="store_true",
     )
     parser.add_argument(
         "--3d",
@@ -69,11 +74,16 @@ def rgbd_to_pointcloud(rgb_image, depth_map):
 
 def main():
     args = parse_args()
+    print(args.imagenet_norm)
+    if args.imagenet_norm:
+        normalization = ((0.485, 0.456, 0.406), (0.229, 0.224, 0.225))
+    else:
+        normalization = ((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
     preprocess = transforms.Compose(
         [
             transforms.ToTensor(),
             transforms.Resize(list(map(int, args.image_size))),
-            transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
+            transforms.Normalize(*normalization),
         ]
     )
 
@@ -83,15 +93,22 @@ def main():
 
     image = preprocess(Image.open(args.image)).unsqueeze(0)
     depth, *_ = model(image)
+    if args.imagenet_norm:
+        image_denorm = np.moveaxis(image[0].detach().numpy(), 0, -1) * np.array(
+            [0.229, 0.224, 0.225]
+        ) + np.array([(0.485, 0.456, 0.406)])
+    else:
+        image_denorm = np.moveaxis(image[0].detach().numpy(), 0, -1) * 0.5 + 0.5
     if args._3d:
         rgbd_to_pointcloud(
-            np.moveaxis(image[0].detach().numpy(), 0, -1) * 0.5 + 0.5,
+            image_denorm,
             depth_map=depth[0].squeeze().detach().numpy(),
         )
     else:
         visualised = visualise_depth(
             depth_map=np.moveaxis(depth[0].detach().numpy(), 0, -1),
             rgb_im=np.moveaxis(image[0].detach().numpy(), 0, -1),
+            imagenet_norm=args.imagenet_norm,
         )
         vis = Image.fromarray(np.uint8(visualised)).convert("RGB")
         vis.show()

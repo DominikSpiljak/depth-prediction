@@ -1,0 +1,1 @@
+python3 predict.py --model MIMOUnet --checkpoint lightning_logs/MIMOUnet_35_5k_nyu_all_augs_best/checkpoints/last.ckpt --image test_images/office.jpeg --image-size 240 320

@@ -1,0 +1,1 @@
+python3 predict.py --model LadderNet --checkpoint lightning_logs/laddernet121_original_23_epochs_nyu_all_augs/checkpoints/last.ckpt --image test_images/indoor.jpeg --image-size 240 320 --3d --imagenet-norm

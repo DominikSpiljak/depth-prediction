@@ -1,8 +1,8 @@
 def add_model_args(parser):
     dpt = parser.add_argument_group("DPT")
     dpt.add_argument(
-        "--dummy-DPT",
-        help="Dummy argument for testing",
-        default="DPT_placeholder",
+        "--no-pretrain",
+        action="store_false",
+        dest="pretrained",
     )
     return parser

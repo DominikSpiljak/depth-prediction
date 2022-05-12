@@ -6,12 +6,13 @@ from torchvision import transforms
 from argument_parser import ArgumentParser
 from data.visualiser import visualise_depth
 from models.depth_mimo_unet_module import DepthMIMOUnetModule
+from models.dpt_module import DPTModule
 from models.laddernet_module import LadderNetModule
 
 module_mapping = {
     "MIMOUnet": DepthMIMOUnetModule,
     "LadderNet": LadderNetModule,
-    "DPT": None,
+    "DPT": DPTModule,
 }
 
 model_names = ["MIMOUnet", "LadderNet", "DPT"]
@@ -74,7 +75,6 @@ def rgbd_to_pointcloud(rgb_image, depth_map):
 
 def main():
     args = parse_args()
-    print(args.imagenet_norm)
     if args.imagenet_norm:
         normalization = ((0.485, 0.456, 0.406), (0.229, 0.224, 0.225))
     else:
@@ -92,7 +92,10 @@ def main():
     )
 
     image = preprocess(Image.open(args.image)).unsqueeze(0)
-    depth, *_ = model(image)
+    if model in ["MIMOUnet", "LadderNet"]:
+        depth, *_ = model(image)
+    else:
+        depth = model(image)
     if args.imagenet_norm:
         image_denorm = np.moveaxis(image[0].detach().numpy(), 0, -1) * np.array(
             [0.229, 0.224, 0.225]

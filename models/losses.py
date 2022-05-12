@@ -78,3 +78,18 @@ class LadderNetCriterion(nn.Module):
         ) / 8
 
         return loss + self.aux_weight * aux_loss
+
+
+class DPTCriterion(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.losses = [SILogLoss()]
+        self.factors = [1]
+
+    def forward(self, prediction, target):
+        loss_accumulated = 0
+
+        for factor, loss in zip(self.factors, self.losses):
+            loss_accumulated += loss(prediction, target) * factor
+
+        return loss_accumulated

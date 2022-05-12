@@ -4,12 +4,13 @@ from pytorch_lightning.callbacks import LearningRateMonitor, ModelCheckpoint
 from argument_parser import parse_args
 from data.data_module import DepthEstimationDataModule
 from models.depth_mimo_unet_module import DepthMIMOUnetModule
+from models.dpt_module import DPTModule
 from models.laddernet_module import LadderNetModule
 
 module_mapping = {
     "MIMOUnet": DepthMIMOUnetModule,
     "LadderNet": LadderNetModule,
-    "DPT": None,
+    "DPT": DPTModule,
 }
 
 

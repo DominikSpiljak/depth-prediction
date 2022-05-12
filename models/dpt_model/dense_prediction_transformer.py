@@ -328,11 +328,13 @@ class FeatureFusionBlock(nn.Module):
 
 
 class DPT(nn.Module):
-    def __init__(self, pretrained, pretrained_weights=None, image_size=(320, 240)):
+    def __init__(
+        self, backbone_pretrained, pretrained_weights=None, image_size=(320, 240)
+    ):
         super().__init__()
 
         self.backbone = create_vit_hybrid_backbone(
-            pretrained=pretrained, size=image_size
+            pretrained=backbone_pretrained, size=image_size
         )
         self.scratch = create_scratch()
 

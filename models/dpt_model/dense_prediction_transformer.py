@@ -6,6 +6,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+from models.dpt_model.utils import match_weights
+
 
 def get_activation(name, activations):
     def hook(model, input, output):
@@ -326,7 +328,7 @@ class FeatureFusionBlock(nn.Module):
 
 
 class DPT(nn.Module):
-    def __init__(self, pretrained, image_size=(320, 240)):
+    def __init__(self, pretrained, pretrained_weights=None, image_size=(320, 240)):
         super().__init__()
 
         self.backbone = create_vit_hybrid_backbone(
@@ -352,6 +354,19 @@ class DPT(nn.Module):
         self.scale = 0.000305
         self.shift = 0.1378
 
+        if pretrained_weights is not None:
+
+            loaded_weights = torch.load(
+                pretrained_weights,
+                map_location=torch.device(
+                    "cuda" if torch.cuda.is_available() else "cpu"
+                ),
+            )
+
+            weights = match_weights(loaded_weights)
+
+            self.load_state_dict(weights)
+
     def forward(self, x):
         tokens_1, tokens_2, tokens_3, tokens_4 = self.backbone(x)
 
@@ -360,15 +375,15 @@ class DPT(nn.Module):
         token_3_rn = self.scratch.layer3_rn(tokens_3)
         token_4_rn = self.scratch.layer4_rn(tokens_4)
 
-        context = self.scratch.refinenet1(token_4_rn, token_3_rn.shape[2:])
+        context = self.scratch.refinenet4(token_4_rn, token_3_rn.shape[2:])
 
-        context = self.scratch.refinenet2(
+        context = self.scratch.refinenet3(
             context, token_2_rn.shape[2:], reassembled=token_3_rn
         )
-        context = self.scratch.refinenet3(
+        context = self.scratch.refinenet2(
             context, token_1_rn.shape[2:], reassembled=token_2_rn
         )
-        context = self.scratch.refinenet4(
+        context = self.scratch.refinenet1(
             context,
             (token_1_rn.shape[2] * 2, token_1_rn.shape[3] * 2),
             reassembled=token_1_rn,
@@ -383,7 +398,12 @@ class DPT(nn.Module):
 
 
 if __name__ == "__main__":
-    model = DPT(pretrained=True, image_size=(256, 256))
-    inp = torch.rand(3, 3, 256, 256) * 2 - 1
+    model = DPT(
+        pretrained=True,
+        pretrained_weights="weights/dpt_hybrid-midas-501f0c75.pt",
+        image_size=(256, 256),
+    )
+
+    inp = torch.zeros(3, 3, 256, 256) * 2 - 1
     output = model(inp)
     print(output.shape, output.min(), output.max())

@@ -40,7 +40,7 @@ def resize_for_pos_embed(pos_embed, num_toks_h, num_toks_w):
 
 
 def hybrid_forward(self, x):
-    b, c, w, h = x.shape
+    b, c, h, w = x.shape
 
     pos_embed = resize_for_pos_embed(
         self.pos_embed, h // self.patch_size[1], w // self.patch_size[0]
@@ -329,7 +329,7 @@ class FeatureFusionBlock(nn.Module):
 
 class DPT(nn.Module):
     def __init__(
-        self, backbone_pretrained, pretrained_weights=None, image_size=(320, 240)
+        self, backbone_pretrained, pretrained_weights=None, image_size=(240, 320)
     ):
         super().__init__()
 
@@ -401,11 +401,11 @@ class DPT(nn.Module):
 
 if __name__ == "__main__":
     model = DPT(
-        pretrained=True,
-        pretrained_weights="weights/dpt_hybrid-midas-501f0c75.pt",
-        image_size=(256, 256),
+        backbone_pretrained=True,
+        pretrained_weights="weights/dpt_hybrid_nyu-2ce69ec7.pt",
+        image_size=(480, 640),
     )
 
-    inp = torch.zeros(3, 3, 256, 256) * 2 - 1
-    output = model(inp)
-    print(output.shape, output.min(), output.max())
+    inp = torch.randn(1, 3, 480, 640)
+    print(inp)
+    print(model(inp))

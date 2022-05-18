@@ -391,7 +391,7 @@ class DPT(nn.Module):
             reassembled=token_1_rn,
         )
 
-        inv_depth = self.head(context).squeeze(dim=1)
+        inv_depth = self.head(context)
 
         depth = self.scale * inv_depth + self.shift
         depth[depth < 1e-8] = 1e-8

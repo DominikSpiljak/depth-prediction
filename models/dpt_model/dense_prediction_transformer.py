@@ -372,10 +372,14 @@ class DPT(nn.Module):
     def forward(self, x):
         tokens_1, tokens_2, tokens_3, tokens_4 = self.backbone(x)
 
+        print(self.backbone.activations["4"].shape, tokens_4.shape)
+
         token_1_rn = self.scratch.layer1_rn(tokens_1)
         token_2_rn = self.scratch.layer2_rn(tokens_2)
         token_3_rn = self.scratch.layer3_rn(tokens_3)
         token_4_rn = self.scratch.layer4_rn(tokens_4)
+
+        print(token_4_rn.shape)
 
         context = self.scratch.refinenet4(token_4_rn, token_3_rn.shape[2:])
 
@@ -402,10 +406,10 @@ class DPT(nn.Module):
 if __name__ == "__main__":
     model = DPT(
         backbone_pretrained=True,
-        pretrained_weights="weights/dpt_hybrid_nyu-2ce69ec7.pt",
+        # pretrained_weights="weights/dpt_hybrid_nyu-2ce69ec7.pt",
         image_size=(480, 640),
     )
 
     inp = torch.randn(1, 3, 480, 640)
-    print(inp)
-    print(model(inp))
+    # print(inp)
+    model(inp)

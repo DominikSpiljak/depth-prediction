@@ -111,10 +111,3 @@ class DataCityScapesLoader:
 
     def __len__(self):
         return len(self.rgb_paths)
-
-
-if __name__ == "__main__":
-    loader = DataNYUDepthLoaderEigen("/home/aromaticconfusion/datasets/NYU-depth/")
-
-    for i in range(len(loader)):
-        print(loader[i][3].shape)

@@ -1,8 +1,9 @@
-from pathlib import Path
 import csv
-from PIL import Image
-import numpy as np
+from pathlib import Path
+
 import cv2 as cv
+import numpy as np
+from PIL import Image
 
 
 class DataNYUDepthLoader:
@@ -93,7 +94,6 @@ class DataCityScapesLoader:
             )
 
     def __getitem__(self, key):
-        # TODO: Fix red and blue shifted
         rgb_image = cv.imread(self.rgb_paths[key])
         disparity_image = cv.imread(self.depth_paths[key], cv.IMREAD_UNCHANGED).astype(
             np.float32

@@ -16,8 +16,8 @@ class DotDict(dict):
 
 def parse_args():
     parser = ArgumentParser(
-        prog="Deblurring math expressions",
-        description="Script that trains/evaluates/exploits model for deblurring",
+        prog="Depth prediction",
+        description="Script that trains/evaluates/exploits different model architectures for depth prediction",
     )
 
     data = parser.add_argument_group("data")

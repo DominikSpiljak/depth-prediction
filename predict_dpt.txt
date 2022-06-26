@@ -1,1 +1,1 @@
-python3 predict.py --model DPT --image test_images/office.jpeg --checkpoint lightning_logs/DPT_37_5k_nyu_all_augs/checkpoints/epoch\=21-step\=110000.ckpt --image-size 240 320 --3d
+python3 predict.py --model DPT --image test_images/office.jpeg --checkpoint lightning_logs/DPT_37_5k_nyu_all_augs/checkpoints/DPT_Hybrid.ckpt --image-size 240 320 --3d

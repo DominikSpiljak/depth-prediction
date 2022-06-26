@@ -16,4 +16,8 @@ def add_model_args(parser):
         action="store_false",
         dest="pretrained",
     )
+    laddernet.add_argument(
+        "--use-checkpointing",
+        action="store_true",
+    )
     return parser

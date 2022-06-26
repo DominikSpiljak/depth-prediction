@@ -134,11 +134,18 @@ class PartialDenseBlock(nn.Module):
 
 
 class DenseNet(nn.Module):
-    def __init__(self, densenet="densenet121", pretrained=True):
+    def __init__(
+        self,
+        densenet="densenet121",
+        pretrained=True,
+        use_checkpointing=False,
+    ):
         super().__init__()
-        densenet_layers = list(DENSENETS[densenet](pretrained=pretrained).children())[
-            :-1
-        ][0]
+        densenet_layers = list(
+            DENSENETS[densenet](
+                pretrained=pretrained, memory_efficient=use_checkpointing
+            ).children()
+        )[:-1][0]
 
         self.stem = nn.Sequential(*densenet_layers[:4])
         self.db1 = densenet_layers[4]
@@ -171,12 +178,19 @@ class DenseNet(nn.Module):
 
 
 class LadderNet(nn.Module):
-    def __init__(self, densenet="densenet121", pretrained=True):
+    def __init__(
+        self,
+        densenet="densenet121",
+        pretrained=True,
+        use_checkpointing=False,
+    ):
         super().__init__()
 
         dimensionality_config = DIMENSIONALITIES[densenet]
 
-        self.densenet = DenseNet(densenet, pretrained)
+        self.densenet = DenseNet(
+            densenet, pretrained=pretrained, use_checkpointing=use_checkpointing
+        )
         self.spp = SpatialPyramidPooling(input_features=dimensionality_config[0]["db"])
         self.tu3b = TransitionUpBlock(
             dbdim=dimensionality_config[1]["db"],

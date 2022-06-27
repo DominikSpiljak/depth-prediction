@@ -109,7 +109,7 @@ def main():
         )
     else:
         visualised = visualise_depth(
-            depth_map=np.moveaxis(depth[0].detach().numpy(), 0, -1),
+            depth_map=np.moveaxis(depth[0].squeeze(1).detach().numpy(), 0, -1),
             rgb_im=np.moveaxis(image[0].detach().numpy(), 0, -1),
             imagenet_norm=args.imagenet_norm,
         )
